@@ -5,11 +5,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.util.Log;
 
+import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course;
 import com.example.peterchu.watplanner.Models.CourseResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
@@ -26,31 +27,48 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         ApiInterface apiService =
                 ApiClient.getClient().create(ApiInterface.class);
 
-        Call<CourseResponse> call = apiService.getCourses("1175", Constants.API_KEY);
-        call.enqueue(new Callback<CourseResponse>() {
-            @Override
-            public void onResponse(Call<CourseResponse>call, Response<CourseResponse> response) {
-                Log.d("MainActivity", response.toString());
-                List<Course> courses = response.body().getData();
-                Log.d("MyActivity", "Number of courses received: " + courses.size());
-            }
+        final DatabaseHandler dbHandler = new DatabaseHandler(this);
 
-            @Override
-            public void onFailure(Call<CourseResponse>call, Throwable t) {
-                // Log error here since request failed
-                Log.e("MyActivity", t.toString());
-            }
-        });
+        if(dbHandler.getCoursesCount() == 0) {
+            Call<CourseResponse> call = apiService.getCourses("1175", Constants.API_KEY);
+            call.enqueue(new Callback<CourseResponse>() {
+                @Override
+                public void onResponse(Call<CourseResponse> call, Response<CourseResponse> response) {
+                    Log.d("MainActivity", response.toString());
+                    List<Course> courses = response.body().getData();
+                    Log.d("MyActivity", "Number of courses received: " + courses.size());
+
+                    if (dbHandler.getCoursesCount() == 0) {
+                        try {
+                            Log.d("MyActivity", "Trying to add courses");
+                            dbHandler.addCourses(courses);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e("DatabaseHandler", "Failed to add courses!!");
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<CourseResponse> call, Throwable t) {
+                    // Log error here since request failed
+                    Log.e("MyActivity", t.toString());
+                }
+            });
+        } else {
+            Log.d("MyActivity", "Num courses in db: " + dbHandler.getCoursesCount());
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-       FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
