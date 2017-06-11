@@ -15,7 +15,7 @@ import java.util.List;
  * Created by Timothy Tong on 6/11/17.
  */
 
-public class DatabaseHandler extends SQLiteOpenHelper{
+public class DatabaseHandler extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "coursesManager";
     private static final String TABLE_COURSES = "courses";
@@ -30,10 +30,12 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     private class AddCourseHelper implements Runnable {
         private List<Course> courses;
         DatabaseHandler dbHandler;
+        DBHandlerCallback callback;
 
-        public AddCourseHelper(List<Course> courses, DatabaseHandler dbHandler) {
+        public AddCourseHelper(List<Course> courses, DatabaseHandler dbHandler, DBHandlerCallback callback) {
             this.courses = courses;
             this.dbHandler = dbHandler;
+            this.callback = callback;
         }
 
         @Override
@@ -50,6 +52,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
             }
 
             db.close();
+            this.callback.onFinishTransaction(this.dbHandler);
         }
     }
 
@@ -73,11 +76,10 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         onCreate(db);
     }
 
-    public void addCourses(List<Course> courses) throws Exception {
-        Thread t = new Thread(new AddCourseHelper(courses, this));
+    public void addCourses(List<Course> courses, DBHandlerCallback callback) throws Exception {
+        Thread t = new Thread(new AddCourseHelper(courses, this, callback));
         try {
             t.start();
-            //t.join();
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

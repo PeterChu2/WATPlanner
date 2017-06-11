@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course;
 import com.example.peterchu.watplanner.Models.CourseResponse;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(dbHandler.getCoursesCount() == 0) {
             Call<CourseResponse> call = apiService.getCourses("1175", Constants.API_KEY);
+
             call.enqueue(new Callback<CourseResponse>() {
                 @Override
                 public void onResponse(Call<CourseResponse> call, Response<CourseResponse> response) {
@@ -44,10 +46,19 @@ public class MainActivity extends AppCompatActivity {
                     List<Course> courses = response.body().getData();
                     Log.d("MyActivity", "Number of courses received: " + courses.size());
 
+
                     if (dbHandler.getCoursesCount() == 0) {
                         try {
                             Log.d("MyActivity", "Trying to add courses");
-                            dbHandler.addCourses(courses);
+
+                            final DBHandlerCallback callback = new DBHandlerCallback() {
+                                @Override
+                                public void onFinishTransaction(DatabaseHandler dbHandler) {
+                                    Log.d("DBHandlerCallback", "Finished adding courses count: " + dbHandler.getCoursesCount());
+                                }
+                            };
+
+                            dbHandler.addCourses(courses, callback);
                         } catch (Exception e) {
                             e.printStackTrace();
                             Log.e("DatabaseHandler", "Failed to add courses!!");
