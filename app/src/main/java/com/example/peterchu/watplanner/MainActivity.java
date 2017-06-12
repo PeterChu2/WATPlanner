@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 
 import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
@@ -16,6 +17,7 @@ import com.example.peterchu.watplanner.Models.Course;
 import com.example.peterchu.watplanner.Models.CourseResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
+import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 
 import java.util.List;
 
@@ -45,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("MainActivity", response.toString());
                     List<Course> courses = response.body().getData();
                     Log.d("MyActivity", "Number of courses received: " + courses.size());
-
+                    ListView userCoursesList = (ListView) findViewById(R.id.userCoursesList);
+                    userCoursesList.setAdapter(new CourseListAdapter(MainActivity.this,
+                            R.layout.course_list_item_view, courses));
 
                     if (dbHandler.getCoursesCount() == 0) {
                         try {
