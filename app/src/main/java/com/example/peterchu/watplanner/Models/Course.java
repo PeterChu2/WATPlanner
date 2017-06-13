@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
  */
 
 public class Course {
+    private int id;
     @SerializedName("subject")
     private String subject;
     @SerializedName("catalog_number")
@@ -18,6 +19,7 @@ public class Course {
     private String title;
 
     public Course(String subject, String number, String credits, String title) {
+        this.id = -1;
         this.subject = subject;
         this.number = number;
         this.credits = credits;
@@ -26,6 +28,30 @@ public class Course {
 
     public String getName() {
         return this.subject + " " + this.number;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return this.id;
+    }
+
+    public String getSubject() {
+        return this.subject;
+    }
+
+    public String getNumber() {
+        return this.number;
+    }
+
+    public String getCredits() {
+        return this.credits;
+    }
+
+    public String getTitle() {
+        return this.title;
     }
 
 }
