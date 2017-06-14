@@ -29,6 +29,9 @@ public class Course {
     public String getName() {
         return this.subject + " " + this.number;
     }
+    public String getTitle() {
+        return this.title;
+    }
 
     public void setId(int id) {
         this.id = id;
@@ -48,10 +51,6 @@ public class Course {
 
     public String getCredits() {
         return this.credits;
-    }
-
-    public String getTitle() {
-        return this.title;
     }
 
 }
