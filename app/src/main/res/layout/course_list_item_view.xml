@@ -1,7 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="30px">
+    android:paddingTop="30px"
+    android:paddingBottom="30px">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,14 +12,14 @@
         android:id="@+id/listItemRow1">
 
         <TextView
-            android:id="@+id/listItemCourseTitle"
+            android:id="@+id/listItemCourseName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textAppearance="@android:style/TextAppearance.Material.Title" />
 
         <TextView
-            android:id="@+id/listItemCourseSection"
+            android:id="@+id/listItemCourseConflict"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -36,7 +37,7 @@
         android:layout_below="@+id/listItemRow1"
         android:orientation="horizontal">
         <TextView
-            android:id="@+id/listItemCourseName"
+            android:id="@+id/listItemCourseTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1" />

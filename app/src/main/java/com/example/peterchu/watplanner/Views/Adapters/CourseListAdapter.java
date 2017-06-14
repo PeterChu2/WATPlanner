@@ -30,13 +30,16 @@ public class CourseListAdapter extends ArrayAdapter<Course> {
         Course course = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.course_list_item_view, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.course_list_item_view,
+                    parent, false);
         }
-        TextView title = (TextView) convertView.findViewById(R.id.listItemCourseTitle);
-        title.setText(course.getName());
-        TextView section = (TextView) convertView.findViewById(R.id.listItemCourseSection);
-        section.setText(String.format("Section %d", 1));
-        // Populate the data into the template view using the data object
+        TextView nameTextView = (TextView) convertView.findViewById(R.id.listItemCourseName);
+        nameTextView.setText(course.getName());
+        TextView titleTextView = (TextView) convertView.findViewById(R.id.listItemCourseTitle);
+        titleTextView.setText(course.getTitle());
+        TextView conflictFlagTextView = (TextView) convertView.findViewById(
+                R.id.listItemCourseConflict);
+        conflictFlagTextView.setVisibility(View.VISIBLE);
         // Return the completed view to render on screen
         return convertView;
     }
