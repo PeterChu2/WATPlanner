@@ -17,6 +17,8 @@ import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course;
 import com.example.peterchu.watplanner.Models.CourseResponse;
+import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
+import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
@@ -94,6 +96,25 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.d("MyActivity", "Num courses in db: " + dbHandler.getCoursesCount());
         }
+        
+        Call<CourseScheduleResponse> scheduleCall = apiService.getSubjectCourseSchedules(
+                "1175", "ECE", Constants.API_KEY
+        );
+        scheduleCall.enqueue(new Callback<CourseScheduleResponse>() {
+            @Override
+            public void onResponse(Call<CourseScheduleResponse>call,
+                                   Response<CourseScheduleResponse> response) {
+                Log.d("MainActivity", response.toString());
+                List<CourseSchedule> schedules = response.body().getData();
+                Log.d("MainActivity", "Number of courses schedules received: " + schedules.size());
+            }
+
+            @Override
+            public void onFailure(Call<CourseScheduleResponse>call, Throwable t) {
+                // Log error here since request failed
+                Log.e("MainActivity", t.toString());
+            }
+        });
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
