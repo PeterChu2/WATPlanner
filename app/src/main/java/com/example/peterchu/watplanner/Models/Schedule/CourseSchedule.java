@@ -1,4 +1,4 @@
-package com.example.peterchu.watplanner.Models;
+package com.example.peterchu.watplanner.Models.Schedule;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -59,6 +59,9 @@ public class CourseSchedule {
     @SerializedName("topic")
     @Expose
     private Object topic;
+    @SerializedName("classes")
+    @Expose
+    private List<ScheduledClass> classes = null;
     @SerializedName("held_with")
     @Expose
     private List<Object> heldWith = null;
@@ -198,6 +201,14 @@ public class CourseSchedule {
 
     public void setTopic(Object topic) {
         this.topic = topic;
+    }
+
+    public List<ScheduledClass> getScheduledClasses() {
+        return classes;
+    }
+
+    public void setClasses(List<ScheduledClass> classes) {
+        this.classes = classes;
     }
 
     public List<Object> getHeldWith() {

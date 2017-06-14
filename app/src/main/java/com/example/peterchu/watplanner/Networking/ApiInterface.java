@@ -1,7 +1,7 @@
 package com.example.peterchu.watplanner.Networking;
 
 import com.example.peterchu.watplanner.Models.CourseResponse;
-import com.example.peterchu.watplanner.Models.CourseScheduleResponse;
+import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

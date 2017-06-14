@@ -1,5 +1,6 @@
-package com.example.peterchu.watplanner.Models;
+package com.example.peterchu.watplanner.Models.Schedule;
 
+import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
