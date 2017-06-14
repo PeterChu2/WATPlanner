@@ -1,5 +1,7 @@
 package com.example.peterchu.watplanner;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -19,7 +21,9 @@ import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
                 ApiClient.getClient().create(ApiInterface.class);
 
         final DatabaseHandler dbHandler = new DatabaseHandler(this);
+        SharedPreferences prefs = this.getSharedPreferences("general_settings", Context.MODE_PRIVATE);
+        final Set<String> addedCourses = prefs.getStringSet(Constants.SHARED_PREFS_ADDED_COURSES,
+                null);
 
         if(dbHandler.getCoursesCount() == 0) {
             Call<CourseResponse> call = apiService.getCourses("1175", Constants.API_KEY);
@@ -46,10 +53,18 @@ public class MainActivity extends AppCompatActivity {
                 public void onResponse(Call<CourseResponse> call, Response<CourseResponse> response) {
                     Log.d("MainActivity", response.toString());
                     List<Course> courses = response.body().getData();
+                    List<Course> currentCourses = new ArrayList<Course>();
+                    if (addedCourses != null) {
+                        for (Course c : courses) {
+                            if (addedCourses.contains(c.getName())) {
+                                currentCourses.add(c);
+                            }
+                        }
+                    }
                     Log.d("MyActivity", "Number of courses received: " + courses.size());
                     ListView userCoursesList = (ListView) findViewById(R.id.userCoursesList);
                     userCoursesList.setAdapter(new CourseListAdapter(MainActivity.this,
-                            R.layout.course_list_item_view, courses));
+                            R.layout.course_list_item_view, currentCourses));
 
                     if (dbHandler.getCoursesCount() == 0) {
                         try {

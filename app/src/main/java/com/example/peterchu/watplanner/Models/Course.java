@@ -53,8 +53,4 @@ public class Course {
         return this.credits;
     }
 
-    public String getTitle() {
-        return this.title;
-    }
-
 }
