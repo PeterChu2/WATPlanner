@@ -1,4 +1,4 @@
-package com.example.peterchu.watplanner.Models;
+package com.example.peterchu.watplanner.Models.Course;
 
 /**
  * Created by Timothy Tong on 6/5/17.

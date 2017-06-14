@@ -1,4 +1,4 @@
-package com.example.peterchu.watplanner.Models;
+package com.example.peterchu.watplanner.Models.Course;
 
 import com.google.gson.annotations.SerializedName;
 
