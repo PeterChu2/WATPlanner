@@ -1,17 +1,21 @@
 package com.example.peterchu.watplanner;
 
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
@@ -24,15 +28,18 @@ import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final Pattern courseCodePattern = Pattern.compile("(\\w+)[\\s]*([1-9]\\w+)");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +50,15 @@ public class MainActivity extends AppCompatActivity {
                 ApiClient.getClient().create(ApiInterface.class);
 
         final DatabaseHandler dbHandler = new DatabaseHandler(this);
-        SharedPreferences prefs = this.getSharedPreferences("general_settings", Context.MODE_PRIVATE);
-        final Set<String> addedCourses = prefs.getStringSet(Constants.SHARED_PREFS_ADDED_COURSES,
-                null);
+        final ListView userCoursesList = (ListView) findViewById(R.id.userCoursesList);
+
+        SharedPreferences sharedPreferences = PreferenceManager.
+                getDefaultSharedPreferences(MainActivity.this);
+        final List<Course> currentCourses = new ArrayList<Course>();
+        final Set<String> savedCourses = sharedPreferences.getStringSet(Constants.SHARED_PREFS_ADDED_COURSES,
+                new HashSet<String>());
+        userCoursesList.setAdapter(new CourseListAdapter(MainActivity.this,
+                R.layout.course_list_item_view, currentCourses));
 
         if(dbHandler.getCoursesCount() == 0) {
             Call<CourseResponse> call = apiService.getCourses("1175", Constants.API_KEY);
@@ -55,18 +68,17 @@ public class MainActivity extends AppCompatActivity {
                 public void onResponse(Call<CourseResponse> call, Response<CourseResponse> response) {
                     Log.d("MainActivity", response.toString());
                     List<Course> courses = response.body().getData();
-                    List<Course> currentCourses = new ArrayList<Course>();
-                    if (addedCourses != null) {
+                    if (savedCourses != null) {
                         for (Course c : courses) {
-                            if (addedCourses.contains(c.getName())) {
+                            if (savedCourses.contains(String.valueOf(c.getId()))) {
                                 currentCourses.add(c);
                             }
                         }
+                        ((CourseListAdapter) (userCoursesList.getAdapter())).notifyDataSetChanged();
                     }
+
                     Log.d("MyActivity", "Number of courses received: " + courses.size());
-                    ListView userCoursesList = (ListView) findViewById(R.id.userCoursesList);
-                    userCoursesList.setAdapter(new CourseListAdapter(MainActivity.this,
-                            R.layout.course_list_item_view, currentCourses));
+
 
                     if (dbHandler.getCoursesCount() == 0) {
                         try {
@@ -95,6 +107,12 @@ public class MainActivity extends AppCompatActivity {
             });
         } else {
             Log.d("MyActivity", "Num courses in db: " + dbHandler.getCoursesCount());
+            List<Course> courses = dbHandler.getCourses(savedCourses.toArray(
+                    new String[savedCourses.size()]));
+            for (Course c : courses) {
+                currentCourses.add(c);
+            }
+            ((CourseListAdapter) (userCoursesList.getAdapter())).notifyDataSetChanged();
         }
         
         Call<CourseScheduleResponse> scheduleCall = apiService.getSubjectCourseSchedules(
@@ -123,8 +141,58 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Add a course to your schedule");
+
+                final EditText inputEditText = new EditText(MainActivity.this);
+                inputEditText.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(inputEditText);
+
+                builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String input = inputEditText.getText().toString();
+                        Matcher matcher = courseCodePattern.matcher(input);
+                        if (!matcher.find()) {
+                            Toast.makeText(MainActivity.this, "Invalid course code!",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        String subject = matcher.group(1);
+                        String catalogNumber = matcher.group(2);
+                        Course course = dbHandler.getCourseByCourseCode(subject.toUpperCase(),
+                                catalogNumber.toUpperCase());
+                        if (course == null) {
+                            Toast.makeText(MainActivity.this, "Course is invalid or not offered " +
+                                            "this term!",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        currentCourses.add(course);
+                        ((CourseListAdapter) (userCoursesList.getAdapter())).notifyDataSetChanged();
+                        SharedPreferences sharedPreferences = PreferenceManager.
+                                getDefaultSharedPreferences(MainActivity.this);
+                        Set<String> savedPrefs = sharedPreferences.getStringSet(
+                                Constants.SHARED_PREFS_ADDED_COURSES, null);
+                        savedPrefs.add(String.valueOf(course.getId()));
+
+                        SharedPreferences.Editor e = sharedPreferences.edit();
+                        e.remove(Constants.SHARED_PREFS_ADDED_COURSES);
+                        e.apply();
+                        e.putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, savedPrefs);
+                        e.apply();
+                    }
+                });
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
             }
         });
     }

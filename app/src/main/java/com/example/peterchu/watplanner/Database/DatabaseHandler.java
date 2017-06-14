@@ -213,6 +213,43 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return course;
     }
 
+    // Get courses by list of ids
+    public List<Course> getCourses(String[] ids) {
+        if (ids.length == 0) {
+            return new ArrayList<Course>();
+        }
+        List<Course> ret = new ArrayList<Course>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ids.length; i++) {
+            sb.append('?');
+            sb.append(',');
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        Cursor cursor = db.query(
+                TABLE_COURSES,
+                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                KEY_ID + " IN (" + sb.toString() + ")",
+                ids,
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor == null) {
+            return new ArrayList<Course>();
+        }
+        if (cursor.moveToFirst()) {
+            do {
+                Course course = new Course(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
+                course.setId(Integer.parseInt(cursor.getString(0)));
+                ret.add(course);
+            } while (cursor.moveToNext());
+        }
+        return ret;
+    }
+
     // Get courses by subject
     public List<Course> getCoursesBySubject(String subject) {
         List<Course> ret = new ArrayList<>();
@@ -319,6 +356,27 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
 
         return ret;
+    }
+
+    public Course getCourseByCourseCode(String subject, String catalogNumber) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(
+                TABLE_COURSES,
+                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                KEY_SUBJECT + "=? AND " + KEY_NUMBER + "=?",
+                new String[] { subject, catalogNumber },
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor == null || !cursor.moveToFirst()) return null;
+
+        Course course = new Course(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
+        course.setId(Integer.parseInt(cursor.getString(0)));
+
+        return course;
     }
 
     /** No need for an UPDATE operation. **/
