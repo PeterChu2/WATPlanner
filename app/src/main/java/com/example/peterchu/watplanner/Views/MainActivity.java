@@ -1,4 +1,4 @@
-package com.example.peterchu.watplanner;
+package com.example.peterchu.watplanner.Views;
 
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -13,10 +13,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.peterchu.watplanner.Constants;
 import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
@@ -25,6 +27,7 @@ import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
+import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 
 import java.util.ArrayList;
@@ -51,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
 
         final DatabaseHandler dbHandler = new DatabaseHandler(this);
         final ListView userCoursesList = (ListView) findViewById(R.id.userCoursesList);
+        userCoursesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                
+            }
+        });
 
         SharedPreferences sharedPreferences = PreferenceManager.
                 getDefaultSharedPreferences(MainActivity.this);

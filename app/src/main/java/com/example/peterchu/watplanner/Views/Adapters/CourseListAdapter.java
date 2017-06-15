@@ -39,6 +39,7 @@ public class CourseListAdapter extends ArrayAdapter<Course> {
         titleTextView.setText(course.getTitle());
         TextView conflictFlagTextView = (TextView) convertView.findViewById(
                 R.id.listItemCourseConflict);
+        // TODO: check for conflicts here and set this appropriately
         conflictFlagTextView.setVisibility(View.VISIBLE);
         // Return the completed view to render on screen
         return convertView;
