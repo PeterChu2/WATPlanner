@@ -16,6 +16,7 @@ import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Course.CourseDetailsResponse;
+import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.R;
@@ -49,6 +50,8 @@ public class CourseDetailActivity extends AppCompatActivity {
             final DatabaseHandler dbHandler = new DatabaseHandler(this);
             Course course = dbHandler.getCourse(getIntent().getIntExtra(
                     CourseDetailFragment.ARG_COURSE_ID, -1));
+            final CourseSchedule courseSchedule = dbHandler.getCourseSchedule(course.getSubject(),
+                    course.getNumber());
             ApiInterface apiService =
                     ApiClient.getClient().create(ApiInterface.class);
             Call<CourseDetailsResponse> call = apiService.getCourseDetails(course.getSubject(),
@@ -66,6 +69,7 @@ public class CourseDetailActivity extends AppCompatActivity {
                             getIntent().getIntExtra(CourseDetailFragment.ARG_COURSE_ID, -1));
                     CourseDetailFragment fragment = new CourseDetailFragment();
                     fragment.setCourseDetails(courseDetails);
+                    fragment.setCourseSchedule(courseSchedule);
                     fragment.setArguments(arguments);
                     getSupportFragmentManager().beginTransaction()
                             .add(R.id.course_detail_container, fragment)

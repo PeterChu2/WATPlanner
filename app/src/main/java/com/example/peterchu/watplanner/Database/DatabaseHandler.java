@@ -360,6 +360,44 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
+    public CourseSchedule getCourseSchedule(String subject, String catalogNumber) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                TABLE_SCHEDULES,
+                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                KEY_SUBJECT + "=? AND " + KEY_NUMBER + "=?",
+                new String[] { subject, catalogNumber },
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor == null) { return null; }
+        cursor.moveToFirst();
+        if (cursor.getCount() == 0) { return null; }
+
+        CourseSchedule courseSchedule = new CourseSchedule();
+        courseSchedule.setClassNumber(cursor.getInt(1));
+        courseSchedule.setSubject(cursor.getString(2));
+        courseSchedule.setCatalogNumber(cursor.getString(3));
+        courseSchedule.setTitle(cursor.getString(4));
+        courseSchedule.setEnrollmentCapacity(cursor.getInt(5));
+        courseSchedule.setEnrollmentTotal(cursor.getInt(6));
+        courseSchedule.setWaitingCapacity(cursor.getInt(7));
+        courseSchedule.setWaitingTotal(cursor.getInt(8));
+        courseSchedule.setType(cursor.getString(9));
+        courseSchedule.setSession(cursor.getString(10));
+        courseSchedule.setStartTime(cursor.getString(11));
+        courseSchedule.setEndTime(cursor.getString(12));
+        courseSchedule.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
+        courseSchedule.setIsClosed(cursor.getInt(14) == 1 ? true : false);
+        courseSchedule.setIsTba(cursor.getInt(15) == 1 ? true : false);
+        courseSchedule.setDay(cursor.getString(16));
+        return courseSchedule;
+    }
+
     public Course getCourseByCourseCode(String subject, String catalogNumber) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(

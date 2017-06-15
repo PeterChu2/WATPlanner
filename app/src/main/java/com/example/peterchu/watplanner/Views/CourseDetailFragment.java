@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
+import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.R;
 
 /**
@@ -20,6 +21,8 @@ public class CourseDetailFragment extends Fragment {
 
     private CourseDetails mCourseDetails;
 
+    private CourseSchedule mCourseSchedule;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -29,6 +32,10 @@ public class CourseDetailFragment extends Fragment {
 
     public void setCourseDetails(CourseDetails courseDetails) {
         mCourseDetails = courseDetails;
+    }
+
+    public void setCourseSchedule(CourseSchedule courseSchedule) {
+        mCourseSchedule = courseSchedule;
     }
 
     @Override
