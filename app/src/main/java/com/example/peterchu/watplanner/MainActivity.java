@@ -15,8 +15,8 @@ import android.widget.ListView;
 
 import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
-import com.example.peterchu.watplanner.Models.Course;
-import com.example.peterchu.watplanner.Models.CourseResponse;
+import com.example.peterchu.watplanner.Models.Course.Course;
+import com.example.peterchu.watplanner.Models.Course.CourseResponse;
 import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
