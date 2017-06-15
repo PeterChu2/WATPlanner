@@ -4,4 +4,6 @@
     <string name="userCourseTitle">My Courses</string>
     <string name="conflict">CONFLICT</string>
     <string name="my_courses">My Courses</string>
+    <string name="title_course_list">Courses</string>
+    <string name="title_course_detail">Course Detail</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.example.peterchu.watplanner.Views;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -57,7 +59,11 @@ public class MainActivity extends AppCompatActivity {
         userCoursesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                
+                Context context = view.getContext();
+                Intent intent = new Intent(context, CourseDetailActivity.class);
+                Course c = (Course) userCoursesList.getItemAtPosition(position);
+                intent.putExtra(CourseDetailFragment.ARG_COURSE_ID, c.getId());
+                context.startActivity(intent);
             }
         });
 

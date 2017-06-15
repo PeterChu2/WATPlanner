@@ -205,7 +205,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 null
         );
 
-        if (cursor != null)  cursor.moveToFirst();
+        if (cursor == null) { return null; }
+        cursor.moveToFirst();
+        if (cursor.getCount() == 0) { return null; }
 
         Course course = new Course(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
         course.setId(Integer.parseInt(cursor.getString(0)));
