@@ -363,7 +363,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.query(
                 TABLE_COURSES,
                 new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
-                KEY_SUBJECT + "=? AND " + KEY_NUMBER + "=?",
+                KEY_SUBJECT + "=UPPER(?) AND " + KEY_NUMBER + "=UPPER(?)",
                 new String[] { subject, catalogNumber },
                 null,
                 null,

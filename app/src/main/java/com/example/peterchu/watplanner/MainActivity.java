@@ -160,8 +160,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         String subject = matcher.group(1);
                         String catalogNumber = matcher.group(2);
-                        Course course = dbHandler.getCourseByCourseCode(subject.toUpperCase(),
-                                catalogNumber.toUpperCase());
+                        Course course = dbHandler.getCourseByCourseCode(subject, catalogNumber);
                         if (course == null) {
                             Toast.makeText(MainActivity.this, "Course is invalid or not offered " +
                                             "this term!",
