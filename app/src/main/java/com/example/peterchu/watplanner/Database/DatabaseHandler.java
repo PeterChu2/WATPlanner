@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.peterchu.watplanner.Models.Course.Course;
+import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
+import com.example.peterchu.watplanner.Models.Schedule.ScheduledClass;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +21,32 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "coursesManager";
     private static final String TABLE_COURSES = "courses";
+    private static final String TABLE_SCHEDULES = "schedules";
 
-    // Courses Table Columns names
+    // Shared
     private static final String KEY_ID = "id";
     private static final String KEY_SUBJECT = "subject";
     private static final String KEY_NUMBER = "number";
+
+    // Courses Table Columns names
     private static final String KEY_CREDITS = "credits";
     private static final String KEY_TITLE = "title";
+
+    // Courses Schedule Columns names
+    private static final String KEY_CLASS_NUMBER = "classNumber";
+    private static final String KEY_TYPE = "type"; // LEC / LAB / TUT
+    private static final String KEY_SESSION_NUMBER = "sessionNumber";
+    private static final String KEY_ENROLLMENT_CAPACITY = "enrollmentCapacity";
+    private static final String KEY_ENROLLMENT_TOTAL = "enrollmentTotal";
+    private static final String KEY_WAITING_CAPACITY = "waitingCapacity";
+    private static final String KEY_WAITING_TOTAL = "waitingTotal";
+    private static final String KEY_START_TIME = "startTime";
+    private static final String KEY_END_TIME = "endTime";
+    private static final String KEY_IS_CANCELLED = "isCancelled";
+    private static final String KEY_IS_CLOSED = "isClosed";
+    private static final String KEY_IS_TBA = "isTba";
+    private static final String KEY_DAY = "day";
+
 
     private class AddCourseHelper implements Runnable {
         private List<Course> courses;
@@ -56,6 +77,56 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
+    private class AddScheduleHelper implements Runnable {
+        private List<CourseSchedule> schedules;
+        DatabaseHandler dbHandler;
+        DBHandlerCallback callback;
+
+        public AddScheduleHelper(List<CourseSchedule> schedules, DatabaseHandler dbHandler, DBHandlerCallback callback) {
+            this.schedules = schedules;
+            this.dbHandler = dbHandler;
+            this.callback = callback;
+        }
+
+        @Override
+        public void run() {
+            SQLiteDatabase db = this.dbHandler.getWritableDatabase();
+
+            for (CourseSchedule courseSchedule : this.schedules) {
+                ContentValues values = new ContentValues();
+                values.put(KEY_CLASS_NUMBER, courseSchedule.getClassNumber());
+                values.put(KEY_SUBJECT, courseSchedule.getSubject());
+                values.put(KEY_NUMBER, courseSchedule.getCatalogNumber());
+                values.put(KEY_TITLE, courseSchedule.getTitle());
+                values.put(KEY_ENROLLMENT_CAPACITY, courseSchedule.getEnrollmentCapacity());
+                values.put(KEY_ENROLLMENT_TOTAL, courseSchedule.getEnrollmentTotal());
+                values.put(KEY_WAITING_CAPACITY, courseSchedule.getWaitingCapacity());
+                values.put(KEY_WAITING_TOTAL, courseSchedule.getWaitingTotal());
+
+                String[] typeSection = courseSchedule.getSection().split(" ");
+                values.put(KEY_TYPE, typeSection[0]);
+                values.put(KEY_SESSION_NUMBER, typeSection[1]);
+
+                // Date
+                List<ScheduledClass> scheduledClasses = courseSchedule.getScheduledClasses();
+                for (ScheduledClass sClass: scheduledClasses) {
+                    ScheduledClass.Date d = sClass.getDate();
+                    values.put(KEY_START_TIME, d.getStartTime());
+                    values.put(KEY_END_TIME, d.getEndTime());
+                    values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
+                    values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
+                    values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
+                    values.put(KEY_DAY, d.getWeekdays());
+                    db.insert(TABLE_COURSES, null, values);
+                }
+
+            }
+
+            db.close();
+            this.callback.onFinishTransaction(this.dbHandler);
+        }
+    }
+
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -68,16 +139,36 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_ID + " INTEGER PRIMARY KEY," + KEY_SUBJECT + " TEXT,"
                 + KEY_NUMBER + " TEXT," + KEY_CREDITS + " TEXT," + KEY_TITLE + " TEXT" + ")";
         db.execSQL(CREATE_COURSES_TABLE);
+
+        String CREATE_SCHEDULES_TABLE = "CREATE TABLE " + TABLE_SCHEDULES + "("
+                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_CLASS_NUMBER + " INTEGER,"
+                + KEY_SUBJECT + " TEXT,"  + KEY_NUMBER + " TEXT," + KEY_TITLE + " TEXT,"
+                + KEY_ENROLLMENT_CAPACITY + " INTEGER," + KEY_ENROLLMENT_TOTAL + " INTEGER,"
+                + KEY_WAITING_CAPACITY + " INTEGER," + KEY_WAITING_TOTAL + " INTEGER,"
+                + KEY_TYPE + " TEXT," + KEY_SESSION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
+                + KEY_END_TIME + " TEXT," + KEY_IS_CANCELLED + " INTEGER," + KEY_IS_CLOSED + " INTEGER,"
+                + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT" + ")";
+        db.execSQL(CREATE_SCHEDULES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES + "," + TABLE_SCHEDULES);
         onCreate(db);
     }
 
     public void addCourses(List<Course> courses, DBHandlerCallback callback) throws Exception {
         Thread t = new Thread(new AddCourseHelper(courses, this, callback));
+        try {
+            t.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public void addSchedules(List<CourseSchedule> schedules, DBHandlerCallback callback) throws Exception {
+        Thread t = new Thread(new AddScheduleHelper(schedules, this, callback));
         try {
             t.start();
         } catch (Exception e) {
@@ -189,6 +280,41 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 Course course = new Course(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
                 course.setId(Integer.parseInt(cursor.getString(0)));
                 ret.add(course);
+            } while (cursor.moveToNext());
+        }
+
+        return ret;
+    }
+
+    public List<CourseSchedule> getAllCourseSchedules() {
+        List<CourseSchedule> ret = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                CourseSchedule courseSchedule = new CourseSchedule();
+                courseSchedule.setClassNumber(cursor.getInt(1));
+                courseSchedule.setSubject(cursor.getString(2));
+                courseSchedule.setCatalogNumber(cursor.getString(3));
+                courseSchedule.setTitle(cursor.getString(4));
+                courseSchedule.setEnrollmentCapacity(cursor.getInt(5));
+                courseSchedule.setEnrollmentTotal(cursor.getInt(6));
+                courseSchedule.setWaitingCapacity(cursor.getInt(7));
+                courseSchedule.setWaitingTotal(cursor.getInt(8));
+                courseSchedule.setType(cursor.getString(9));
+                courseSchedule.setSession(cursor.getString(10));
+                courseSchedule.setStartTime(cursor.getString(11));
+                courseSchedule.setEndTime(cursor.getString(12));
+                courseSchedule.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
+                courseSchedule.setIsClosed(cursor.getInt(14) == 1 ? true : false);
+                courseSchedule.setIsTba(cursor.getInt(15) == 1 ? true : false);
+                courseSchedule.setDay(cursor.getString(16));
+
+                ret.add(courseSchedule);
             } while (cursor.moveToNext());
         }
 
