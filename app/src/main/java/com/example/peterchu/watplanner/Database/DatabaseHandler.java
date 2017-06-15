@@ -130,7 +130,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
                     values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
                     values.put(KEY_DAY, d.getWeekdays());
-                    db.insert(TABLE_COURSES, null, values);
+                    db.insert(TABLE_SCHEDULES, null, values);
                 }
 
             }
@@ -452,6 +452,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(countQuery, null);
         int count = cursor.getCount();
         cursor.close();
+        db.close();
+        return count;
+    }
+
+    public int getSchedulesCount() {
+        String countQuery = "SELECT * FROM " + TABLE_SCHEDULES;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        cursor.close();
+        db.close();
         return count;
     }
 }
