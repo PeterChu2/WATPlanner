@@ -9,8 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.peterchu.watplanner.Database.DatabaseHandler;
-import com.example.peterchu.watplanner.Models.Course.Course;
+import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.R;
 
 /**
@@ -19,13 +18,17 @@ import com.example.peterchu.watplanner.R;
 public class CourseDetailFragment extends Fragment {
     public static final String ARG_COURSE_ID = "course_id";
 
-    private Course mCourse;
+    private CourseDetails mCourseDetails;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public CourseDetailFragment() {
+    }
+
+    public void setCourseDetails(CourseDetails courseDetails) {
+        mCourseDetails = courseDetails;
     }
 
     @Override
@@ -36,14 +39,13 @@ public class CourseDetailFragment extends Fragment {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            final DatabaseHandler dbHandler = new DatabaseHandler(this.getContext());
-            mCourse = dbHandler.getCourse(getArguments().getInt(ARG_COURSE_ID));
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(
                     R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(mCourse.getName());
+            if (appBarLayout != null && mCourseDetails != null) {
+                appBarLayout.setTitle(mCourseDetails.getSubject() + " " +
+                        mCourseDetails.getCatalogNumber());
             }
         }
     }
@@ -53,11 +55,11 @@ public class CourseDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.course_detail, container, false);
 
-        if (mCourse == null) {
+        if (mCourseDetails == null) {
             return rootView;
         }
 
-        ((TextView) rootView.findViewById(R.id.course_detail)).setText(mCourse.getTitle());
+        ((TextView) rootView.findViewById(R.id.course_detail)).setText(mCourseDetails.getTitle());
 
         return rootView;
     }
