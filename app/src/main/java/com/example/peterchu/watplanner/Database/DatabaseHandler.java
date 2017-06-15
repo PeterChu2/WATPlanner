@@ -18,6 +18,8 @@ import java.util.List;
  */
 
 public class DatabaseHandler extends SQLiteOpenHelper {
+    private static final String SERIALIZE_SEPARATOR = "_||_";
+
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "coursesManager";
     private static final String TABLE_COURSES = "courses";
@@ -46,6 +48,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_IS_CLOSED = "isClosed";
     private static final String KEY_IS_TBA = "isTba";
     private static final String KEY_DAY = "day";
+    private static final String KEY_BUIDING = "building";
+    private static final String KEY_ROOM = "room";
+    private static final String KEY_START_DATE = "startDate";
+    private static final String KEY_END_DATE = "endDate";
+    private static final String KEY_INSTRUCTORS = "instructors";
 
     private static DatabaseHandler dbSingleton;
 
@@ -129,7 +136,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
                     values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
                     values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
-                    values.put(KEY_DAY, d.getWeekdays());
+                    values.put(KEY_DAY, d.getDay());
+                    values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
+                    values.put(KEY_ROOM, sClass.getLocation().getRoom());
+                    values.put(KEY_START_DATE, d.getStartDate());
+                    values.put(KEY_END_DATE, d.getEndDate());
+                    values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
                     db.insert(TABLE_SCHEDULES, null, values);
                 }
 
@@ -138,6 +150,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.close();
             this.callback.onFinishTransaction(this.dbHandler);
         }
+    }
+
+    // Helper
+    private static String ListToSerializableString(List<String> in) {
+        StringBuilder sb = new StringBuilder();
+        for (String s: in) {
+            sb.append(s + SERIALIZE_SEPARATOR);
+        }
+        if (in.size() > 0) sb.delete(sb.length() - 1 - SERIALIZE_SEPARATOR.length(), sb.length() - 1);
+        return sb.toString();
+    }
+
+    private static String[] SerializableStringToArray(String in) {
+        return in.split(SERIALIZE_SEPARATOR);
     }
 
     // Creating Tables
