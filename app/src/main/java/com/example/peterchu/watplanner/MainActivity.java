@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferences sharedPreferences = PreferenceManager.
                                 getDefaultSharedPreferences(MainActivity.this);
                         Set<String> savedPrefs = sharedPreferences.getStringSet(
-                                Constants.SHARED_PREFS_ADDED_COURSES, null);
+                                Constants.SHARED_PREFS_ADDED_COURSES, new HashSet<String>());
                         savedPrefs.add(String.valueOf(course.getId()));
 
                         SharedPreferences.Editor e = sharedPreferences.edit();
