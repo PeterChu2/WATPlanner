@@ -48,6 +48,8 @@
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchor="@+id/course_detail_container"
         app:layout_anchorGravity="top|end"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        android:src="@drawable/ic_add_white_24px"
+        app:backgroundTint="@color/colorPrimary"
+        app:fabSize="normal"/>
 
 </android.support.design.widget.CoordinatorLayout>
