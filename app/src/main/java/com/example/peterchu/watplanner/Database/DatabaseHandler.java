@@ -211,6 +211,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Course course = new Course(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
         course.setId(Integer.parseInt(cursor.getString(0)));
+        cursor.close();
 
         return course;
     }
@@ -249,6 +250,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 ret.add(course);
             } while (cursor.moveToNext());
         }
+        cursor.close();
         return ret;
     }
 
@@ -275,7 +277,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 ret.add(course);
             } while (cursor.moveToNext());
         }
-
+        cursor.close();
         return ret;
     }
 
@@ -301,7 +303,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 ret.add(course);
             } while (cursor.moveToNext());
         }
-
+        cursor.close();
         return ret;
     }
 
@@ -321,7 +323,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 ret.add(course);
             } while (cursor.moveToNext());
         }
-
+        cursor.close();
         return ret;
     }
 
@@ -356,7 +358,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 ret.add(courseSchedule);
             } while (cursor.moveToNext());
         }
-
+        cursor.close();
         return ret;
     }
 
@@ -395,6 +397,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         courseSchedule.setIsClosed(cursor.getInt(14) == 1 ? true : false);
         courseSchedule.setIsTba(cursor.getInt(15) == 1 ? true : false);
         courseSchedule.setDay(cursor.getString(16));
+        cursor.close();
         return courseSchedule;
     }
 
@@ -415,7 +418,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Course course = new Course(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
         course.setId(Integer.parseInt(cursor.getString(0)));
-
+        cursor.close();
         return course;
     }
 
