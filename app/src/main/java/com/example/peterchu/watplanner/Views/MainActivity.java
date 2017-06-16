@@ -44,7 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    private static final Pattern courseCodePattern = Pattern.compile("(\\w+)[\\s]*([1-9]\\w+)");
+    private static final Pattern courseCodePattern = Pattern.compile("(\\w+[a-zA-Z])[\\s]*([1-9]\\w+)");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
