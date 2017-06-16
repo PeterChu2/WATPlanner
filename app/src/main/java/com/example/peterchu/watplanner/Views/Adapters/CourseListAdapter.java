@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.Views.Adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;

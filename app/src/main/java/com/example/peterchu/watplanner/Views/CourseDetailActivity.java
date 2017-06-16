@@ -1,7 +1,9 @@
 package com.example.peterchu.watplanner.Views;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
@@ -50,8 +52,13 @@ public class CourseDetailActivity extends AppCompatActivity {
             final DatabaseHandler dbHandler = new DatabaseHandler(this);
             Course course = dbHandler.getCourse(getIntent().getIntExtra(
                     CourseDetailFragment.ARG_COURSE_ID, -1));
-            final CourseSchedule courseSchedule = dbHandler.getCourseSchedule(course.getSubject(),
-                    course.getNumber());
+            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) this.findViewById(
+                    R.id.toolbar_layout);
+            if (appBarLayout != null) {
+                appBarLayout.setTitle(course.getName());
+            }
+//            final CourseSchedule courseSchedule = dbHandler.getCourseSchedule(course.getSubject(),
+//                    course.getNumber());
             ApiInterface apiService =
                     ApiClient.getClient().create(ApiInterface.class);
             Call<CourseDetailsResponse> call = apiService.getCourseDetails(course.getSubject(),
@@ -69,7 +76,7 @@ public class CourseDetailActivity extends AppCompatActivity {
                             getIntent().getIntExtra(CourseDetailFragment.ARG_COURSE_ID, -1));
                     CourseDetailFragment fragment = new CourseDetailFragment();
                     fragment.setCourseDetails(courseDetails);
-                    fragment.setCourseSchedule(courseSchedule);
+//                    fragment.setCourseSchedule(courseSchedule);
                     fragment.setArguments(arguments);
                     getSupportFragmentManager().beginTransaction()
                             .add(R.id.course_detail_container, fragment)
@@ -102,6 +109,7 @@ public class CourseDetailActivity extends AppCompatActivity {
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
+            navigateUpTo(new Intent(this, MainActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);

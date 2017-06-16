@@ -16,7 +16,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="@android:style/TextAppearance.Material.Title" />
+            android:textAppearance="@android:style/TextAppearance.Material.Title"
+            android:textColor="@android:color/black"/>
 
         <TextView
             android:id="@+id/listItemCourseConflict"
@@ -40,6 +41,7 @@
             android:id="@+id/listItemCourseTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textColor="@android:color/darker_gray"/>
     </LinearLayout>
 </RelativeLayout>

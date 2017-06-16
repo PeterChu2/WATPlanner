@@ -41,20 +41,6 @@ public class CourseDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments().containsKey(ARG_COURSE_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-
-            Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(
-                    R.id.toolbar_layout);
-            if (appBarLayout != null && mCourseDetails != null) {
-                appBarLayout.setTitle(mCourseDetails.getSubject() + " " +
-                        mCourseDetails.getCatalogNumber());
-            }
-        }
     }
 
     @Override
@@ -66,7 +52,16 @@ public class CourseDetailFragment extends Fragment {
             return rootView;
         }
 
-        ((TextView) rootView.findViewById(R.id.course_detail)).setText(mCourseDetails.getTitle());
+        ((TextView) rootView.findViewById(R.id.course_title)).setText(mCourseDetails.getTitle());
+//        ((TextView) rootView.findViewById(R.id.course_enrolment)).setText(
+//                String.format("%i/%i", mCourseSchedule.getEnrollmentCapacity(),
+//                        mCourseSchedule.getEnrollmentTotal()));
+        ((TextView) rootView.findViewById(R.id.course_description)).setText(
+                mCourseDetails.getDescription());
+        ((TextView) rootView.findViewById(R.id.course_prerequisites)).setText(
+                mCourseDetails.getPrerequisites());
+        ((TextView) rootView.findViewById(R.id.course_antirequisites)).setText(
+                mCourseDetails.getAntirequisites());
 
         return rootView;
     }
