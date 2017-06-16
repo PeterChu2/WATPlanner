@@ -1,6 +1,8 @@
-package com.example.peterchu.watplanner;
+package com.example.peterchu.watplanner.Views;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -13,10 +15,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.peterchu.watplanner.Constants;
 import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
@@ -25,6 +29,7 @@ import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
+import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 
 import java.util.ArrayList;
@@ -39,7 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    private static final Pattern courseCodePattern = Pattern.compile("(\\w+)[\\s]*([1-9]\\w+)");
+    private static final Pattern courseCodePattern = Pattern.compile("(\\w+[a-zA-Z])[\\s]*([1-9]\\w+)");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +56,16 @@ public class MainActivity extends AppCompatActivity {
 
         final DatabaseHandler dbHandler = new DatabaseHandler(this);
         final ListView userCoursesList = (ListView) findViewById(R.id.userCoursesList);
+        userCoursesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Context context = view.getContext();
+                Intent intent = new Intent(context, CourseDetailActivity.class);
+                Course c = (Course) userCoursesList.getItemAtPosition(position);
+                intent.putExtra(CourseDetailFragment.ARG_COURSE_ID, c.getId());
+                context.startActivity(intent);
+            }
+        });
 
         SharedPreferences sharedPreferences = PreferenceManager.
                 getDefaultSharedPreferences(MainActivity.this);

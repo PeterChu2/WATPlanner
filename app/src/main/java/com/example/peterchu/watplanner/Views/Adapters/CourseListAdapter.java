@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.Views.Adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -39,6 +40,7 @@ public class CourseListAdapter extends ArrayAdapter<Course> {
         titleTextView.setText(course.getTitle());
         TextView conflictFlagTextView = (TextView) convertView.findViewById(
                 R.id.listItemCourseConflict);
+        // TODO: check for conflicts here and set this appropriately
         conflictFlagTextView.setVisibility(View.VISIBLE);
         // Return the completed view to render on screen
         return convertView;

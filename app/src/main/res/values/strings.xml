@@ -4,4 +4,11 @@
     <string name="userCourseTitle">My Courses</string>
     <string name="conflict">CONFLICT</string>
     <string name="my_courses">My Courses</string>
+    <string name="title_course_list">Courses</string>
+    <string name="title_course_detail">WATPlanner</string>
+    <string name="course_detail_view_title_label">Title</string>
+    <string name="course_detail_view_description_label">Description</string>
+    <string name="course_detail_view_enrolment_label">Enrolment</string>
+    <string name="course_detail_view_prerequisites_label">Prerequisites</string>
+    <string name="course_detail_view_antirequisites_label">Antirequisites</string>
 </resources>

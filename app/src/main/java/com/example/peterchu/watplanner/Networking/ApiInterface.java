@@ -1,5 +1,6 @@
 package com.example.peterchu.watplanner.Networking;
 
+import com.example.peterchu.watplanner.Models.Course.CourseDetailsResponse;
 import com.example.peterchu.watplanner.Models.Course.CourseResponse;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 
@@ -28,6 +29,13 @@ public interface ApiInterface {
     Call<CourseScheduleResponse> getSubjectCourseSchedules(
             @Path("termId") String termId,
             @Path("subject") String subject,
+            @Query("key") String apiKey
+    );
+
+    @GET("courses/{subject}/{catalogNumber}.json")
+    Call<CourseDetailsResponse> getCourseDetails(
+            @Path("subject") String subject,
+            @Path("catalogNumber") String catalogNumber,
             @Query("key") String apiKey
     );
 
