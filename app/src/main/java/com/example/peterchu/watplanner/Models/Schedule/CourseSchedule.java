@@ -75,56 +75,6 @@ public class CourseSchedule {
     @Expose
     private String lastUpdated;
 
-    // Parsed Fields
-    private String type;
-    private String session;
-    private String startTime;
-    private String endTime;
-    private String day;
-    private Boolean isCancelled;
-    private Boolean isClosed;
-    private Boolean isTba;
-
-    public String getType() { return type; }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getSession() { return session; }
-
-    public void setSession(String session) { this.session = session; }
-
-    public String getStartTime() { return startTime; }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() { return endTime; }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public String getDay() { return day; }
-
-    public void setDay(String day) {
-        this.day = day;
-    }
-
-    public Boolean getIsCancelled() { return isCancelled; }
-
-    public void setIsCancelled(Boolean isCancelled) { this.isCancelled = isCancelled; }
-
-    public Boolean getIsClosed() { return isClosed; }
-
-    public void setIsClosed(Boolean isClosed) { this.isClosed = isClosed; }
-
-    public Boolean getIsTba() { return isTba; }
-
-    public void setIsTba(Boolean isClosed) { this.isTba = isTba; }
-
     public String getSubject() {
         return subject;
     }

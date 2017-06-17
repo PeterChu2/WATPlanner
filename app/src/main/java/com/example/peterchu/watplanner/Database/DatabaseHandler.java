@@ -7,8 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.peterchu.watplanner.Models.Course.Course;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.ScheduledClass;
+import com.example.peterchu.watplanner.Models.Shared.Location;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -382,8 +384,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
-    public List<CourseSchedule> getAllCourseSchedules() {
-        List<CourseSchedule> ret = new ArrayList<>();
+    public List<CourseComponent> getAllCourseSchedules() {
+        List<CourseComponent> ret = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES;
 
@@ -392,25 +394,30 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                CourseSchedule courseSchedule = new CourseSchedule();
-                courseSchedule.setClassNumber(cursor.getInt(1));
-                courseSchedule.setSubject(cursor.getString(2));
-                courseSchedule.setCatalogNumber(cursor.getString(3));
-                courseSchedule.setTitle(cursor.getString(4));
-                courseSchedule.setEnrollmentCapacity(cursor.getInt(5));
-                courseSchedule.setEnrollmentTotal(cursor.getInt(6));
-                courseSchedule.setWaitingCapacity(cursor.getInt(7));
-                courseSchedule.setWaitingTotal(cursor.getInt(8));
-                courseSchedule.setType(cursor.getString(9));
-                courseSchedule.setSession(cursor.getString(10));
-                courseSchedule.setStartTime(cursor.getString(11));
-                courseSchedule.setEndTime(cursor.getString(12));
-                courseSchedule.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
-                courseSchedule.setIsClosed(cursor.getInt(14) == 1 ? true : false);
-                courseSchedule.setIsTba(cursor.getInt(15) == 1 ? true : false);
-                courseSchedule.setDay(cursor.getString(16));
+                CourseComponent courseComponent = new CourseComponent();
+                courseComponent.setClassNumber(cursor.getInt(1));
+                courseComponent.setSubject(cursor.getString(2));
+                courseComponent.setCatalogNumber(cursor.getString(3));
+                courseComponent.setTitle(cursor.getString(4));
+                courseComponent.setEnrollmentCapacity(cursor.getInt(5));
+                courseComponent.setEnrollmentTotal(cursor.getInt(6));
+                courseComponent.setWaitingCapacity(cursor.getInt(7));
+                courseComponent.setWaitingTotal(cursor.getInt(8));
+                courseComponent.setType(cursor.getString(9));
+                courseComponent.setSection(cursor.getString(10));
+                courseComponent.setStartTime(cursor.getString(11));
+                courseComponent.setEndTime(cursor.getString(12));
+                courseComponent.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
+                courseComponent.setIsClosed(cursor.getInt(14) == 1 ? true : false);
+                courseComponent.setIsTba(cursor.getInt(15) == 1 ? true : false);
+                courseComponent.setDay(cursor.getString(16));
+                Location loc = new Location();
+                loc.setBuilding(cursor.getString(16));
+                loc.setRoom(cursor.getString(17));
+                courseComponent.setInstructors(SerializableStringToArray(cursor.getString(18)));
+                // building room instructors
 
-                ret.add(courseSchedule);
+                ret.add(courseComponent);
             } while (cursor.moveToNext());
         }
         cursor.close();
