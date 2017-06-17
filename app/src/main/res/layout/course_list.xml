@@ -9,5 +9,5 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
-    tools:context="com.example.peterchu.watplanner.Views.MainActivity"
+    tools:context="com.example.peterchu.watplanner.home.HomeActivity"
     tools:listitem="@layout/course_list_content" />

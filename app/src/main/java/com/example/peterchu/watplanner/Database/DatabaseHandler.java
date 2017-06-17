@@ -47,6 +47,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_IS_TBA = "isTba";
     private static final String KEY_DAY = "day";
 
+    private static DatabaseHandler dbSingleton;
+
+    private DatabaseHandler(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    public static DatabaseHandler getInstance(Context context) {
+        if (dbSingleton == null) {
+            dbSingleton = new DatabaseHandler(context);
+        }
+        return dbSingleton;
+    }
+
 
     private class AddCourseHelper implements Runnable {
         private List<Course> courses;
@@ -125,11 +138,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.close();
             this.callback.onFinishTransaction(this.dbHandler);
         }
-    }
-
-
-    public DatabaseHandler(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     // Creating Tables

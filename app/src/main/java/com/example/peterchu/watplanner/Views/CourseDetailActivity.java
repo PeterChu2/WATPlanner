@@ -49,7 +49,7 @@ public class CourseDetailActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            final DatabaseHandler dbHandler = new DatabaseHandler(this);
+            final DatabaseHandler dbHandler = DatabaseHandler.getInstance(this);
             Course course = dbHandler.getCourse(getIntent().getIntExtra(
                     CourseDetailFragment.ARG_COURSE_ID, -1));
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) this.findViewById(
@@ -67,7 +67,7 @@ public class CourseDetailActivity extends AppCompatActivity {
             call.enqueue(new Callback<CourseDetailsResponse>() {
                 @Override
                 public void onResponse(Call<CourseDetailsResponse> call, Response<CourseDetailsResponse> response) {
-                    Log.d("MainActivity", response.toString());
+                    Log.d("HomeActivity", response.toString());
                     CourseDetails courseDetails = response.body().getData();
                     // Create the detail fragment and add it to the activity
                     // using a fragment transaction.
