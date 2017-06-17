@@ -10,6 +10,7 @@ import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseResponse;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
@@ -95,24 +96,49 @@ class HomePresenter implements BasePresenter {
                 homeFragment.addCourses(courses);
             }
 
-            Call<CourseScheduleResponse> scheduleCall = apiInterface.getSubjectCourseSchedules(
-                    "1175", "ECE", Constants.API_KEY
-            );
-            scheduleCall.enqueue(new Callback<CourseScheduleResponse>() {
-                @Override
-                public void onResponse(Call<CourseScheduleResponse> call,
-                                       Response<CourseScheduleResponse> response) {
-                    Log.d("HomePresenter", response.toString());
-                    List<CourseSchedule> schedules = response.body().getData();
-                    Log.d("HomePresenter", "Number of courses schedules received: " + schedules.size());
-                }
 
-                @Override
-                public void onFailure(Call<CourseScheduleResponse> call, Throwable t) {
-                    // Log error here since request failed
-                    Log.e("HomePresenter", t.toString());
+            if(dbHandler.getSchedulesCount() == 0) {
+                Call<CourseScheduleResponse> scheduleCall = apiInterface.getSubjectCourseSchedules(
+                        "1175", "ECE", Constants.API_KEY
+                );
+                scheduleCall.enqueue(new Callback<CourseScheduleResponse>() {
+                    @Override
+                    public void onResponse(Call<CourseScheduleResponse> call,
+                                           Response<CourseScheduleResponse> response) {
+                        Log.d("HomePresenter", response.toString());
+                        List<CourseSchedule> schedules = response.body().getData();
+                        Log.d("HomePresenter", "Number of courses schedules received: " + schedules.size());
+                        try {
+                            Log.d("HomePresenter", "Trying to add course schedules");
+
+                            final DBHandlerCallback callback = new DBHandlerCallback() {
+                                @Override
+                                public void onFinishTransaction(DatabaseHandler dbHandler) {
+                                    Log.d("DBHandlerCallback", "Finished adding schedules count: " + dbHandler.getSchedulesCount());
+                                }
+                            };
+
+                            dbHandler.addSchedules(schedules, callback);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e("DatabaseHandler", "Failed to add schedules!!");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<CourseScheduleResponse> call, Throwable t) {
+                        // Log error here since request failed
+                        Log.e("HomePresenter", t.toString());
+                    }
+                });
+            } else {
+                Log.d("MyActivity", "Num schedules in db: " + dbHandler.getSchedulesCount());
+                List<CourseComponent> schedules = dbHandler.getAllCourseSchedules();
+                for (CourseComponent c : schedules) {
+                    Log.d("MyActivity", c.toString());
                 }
-            });
+            }
+
             isFirstLoad = false;
         }
     }
