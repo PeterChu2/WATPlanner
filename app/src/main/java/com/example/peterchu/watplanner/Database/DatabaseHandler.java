@@ -145,7 +145,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
                         int dayLoc = sb.indexOf(weekday);
                         if (dayLoc != -1) {
-                            dates.add(d.getWeekdays());
+                            dates.add(weekday);
                             count++;
                             sb.delete(dayLoc, dayLoc + weekday.length());
                             values.put(KEY_START_TIME, d.getStartTime());
@@ -153,7 +153,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                             values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
                             values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
                             values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
-                            values.put(KEY_DAY, d.getWeekdays());
+                            values.put(KEY_DAY, weekday);
                             values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
                             values.put(KEY_ROOM, sClass.getLocation().getRoom());
                             values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
@@ -430,16 +430,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         List<CourseComponent> ret = new ArrayList<>();
 
-        Cursor cursor = db.query(
-                TABLE_SCHEDULES,
-                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
-                KEY_SUBJECT + "=? AND " + KEY_NUMBER + "=?",
-                new String[] { subject, catalogNumber },
-                null,
-                null,
-                null,
-                null
-        );
+        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SUBJECT + "=\"" + subject
+                + "\" AND " + KEY_NUMBER + "=\"" + catalogNumber + "\"";
+        Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor.moveToFirst()) {
             do {

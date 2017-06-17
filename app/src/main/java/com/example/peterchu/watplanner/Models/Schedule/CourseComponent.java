@@ -193,6 +193,6 @@ public class CourseComponent {
     }
 
     public String toString() {
-        return String.format("%s %s - %s %s - %s", subject, catalogNumber, type, section, day);
+        return String.format("%s %s - %s %s - %s %s~%s", subject, catalogNumber, type, section, day, startTime, endTime);
     }
 }

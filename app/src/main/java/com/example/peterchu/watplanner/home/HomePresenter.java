@@ -47,6 +47,9 @@ class HomePresenter implements BasePresenter {
 
     @Override
     public void start() {
+        // TODO: remove in PROD :)
+        dbHandler.destroyAndRecreateDb();
+
         if (isFirstLoad) {
             final Set<String> savedCourses = sharedPreferences.getStringSet(
                     Constants.SHARED_PREFS_ADDED_COURSES,
@@ -133,7 +136,7 @@ class HomePresenter implements BasePresenter {
                 });
             } else {
                 Log.d("MyActivity", "Num schedules in db: " + dbHandler.getSchedulesCount());
-                List<CourseComponent> schedules = dbHandler.getAllCourseSchedules();
+                List<CourseComponent> schedules = dbHandler.getCourseSchedule("ECE", "103");
                 for (CourseComponent c : schedules) {
                     Log.d("MyActivity", c.toString());
                 }
