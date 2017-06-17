@@ -192,4 +192,7 @@ public class CourseComponent {
         this.instructors = instructors;
     }
 
+    public String toString() {
+        return String.format("%s %s - %s %s - %s", subject, catalogNumber, type, section, day);
+    }
 }

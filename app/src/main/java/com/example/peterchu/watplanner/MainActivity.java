@@ -21,6 +21,7 @@ import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseResponse;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
@@ -60,9 +61,10 @@ public class MainActivity extends AppCompatActivity {
         userCoursesList.setAdapter(new CourseListAdapter(MainActivity.this,
                 R.layout.course_list_item_view, currentCourses));
 
-        dbHandler.onUpgrade(dbHandler.getWritableDatabase(), 1,2);
+        // dbHandler.onUpgrade(dbHandler.getWritableDatabase(), 1,2);
         // Migration hack for now
-        /*
+
+
         try {
             dbHandler.getCoursesCount();
             dbHandler.getSchedulesCount();
@@ -70,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
             // recreate DB
             dbHandler.deleteAllCoures();
         }
-        */
+
+
 
 
         if(dbHandler.getCoursesCount() == 0) {
@@ -161,7 +164,12 @@ public class MainActivity extends AppCompatActivity {
             });
         } else {
             Log.d("MyActivity", "Num schedules in db: " + dbHandler.getSchedulesCount());
+            List<CourseComponent> schedules = dbHandler.getAllCourseSchedules();
+            for (CourseComponent c : schedules) {
+                Log.d("MyActivity", c.toString());
+            }
         }
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 

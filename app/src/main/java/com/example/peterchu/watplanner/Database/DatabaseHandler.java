@@ -41,7 +41,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Courses Schedule Columns names
     private static final String KEY_CLASS_NUMBER = "classNumber";
     private static final String KEY_TYPE = "type"; // LEC / LAB / TUT
-    private static final String KEY_SESSION_NUMBER = "sessionNumber";
+    private static final String KEY_SECTION_NUMBER = "sectionNumber";
     private static final String KEY_ENROLLMENT_CAPACITY = "enrollmentCapacity";
     private static final String KEY_ENROLLMENT_TOTAL = "enrollmentTotal";
     private static final String KEY_WAITING_CAPACITY = "waitingCapacity";
@@ -129,7 +129,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
                 String[] typeSection = courseSchedule.getSection().split(" ");
                 values.put(KEY_TYPE, typeSection[0]);
-                values.put(KEY_SESSION_NUMBER, typeSection[1]);
+                values.put(KEY_SECTION_NUMBER, typeSection[1]);
 
                 // Date
                 List<ScheduledClass> scheduledClasses = courseSchedule.getScheduledClasses();
@@ -199,7 +199,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_SUBJECT + " TEXT,"  + KEY_NUMBER + " TEXT," + KEY_TITLE + " TEXT,"
                 + KEY_ENROLLMENT_CAPACITY + " INTEGER," + KEY_ENROLLMENT_TOTAL + " INTEGER,"
                 + KEY_WAITING_CAPACITY + " INTEGER," + KEY_WAITING_TOTAL + " INTEGER,"
-                + KEY_TYPE + " TEXT," + KEY_SESSION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
+                + KEY_TYPE + " TEXT," + KEY_SECTION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
                 + KEY_END_TIME + " TEXT," + KEY_IS_CANCELLED + " INTEGER," + KEY_IS_CLOSED + " INTEGER,"
                 + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT,"
                 + KEY_BUIDING + " TEXT," + KEY_ROOM+ " TEXT," + KEY_INSTRUCTORS+ " TEXT" + ")";
@@ -384,6 +384,32 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
+    private CourseComponent makeCourseComponent(Cursor cursor) {
+
+        CourseComponent courseComponent = new CourseComponent();
+        courseComponent.setClassNumber(cursor.getInt(1));
+        courseComponent.setSubject(cursor.getString(2));
+        courseComponent.setCatalogNumber(cursor.getString(3));
+        courseComponent.setTitle(cursor.getString(4));
+        courseComponent.setEnrollmentCapacity(cursor.getInt(5));
+        courseComponent.setEnrollmentTotal(cursor.getInt(6));
+        courseComponent.setWaitingCapacity(cursor.getInt(7));
+        courseComponent.setWaitingTotal(cursor.getInt(8));
+        courseComponent.setType(cursor.getString(9));
+        courseComponent.setSection(cursor.getString(10));
+        courseComponent.setStartTime(cursor.getString(11));
+        courseComponent.setEndTime(cursor.getString(12));
+        courseComponent.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
+        courseComponent.setIsClosed(cursor.getInt(14) == 1 ? true : false);
+        courseComponent.setIsTba(cursor.getInt(15) == 1 ? true : false);
+        courseComponent.setDay(cursor.getString(16));
+        Location loc = new Location();
+        loc.setBuilding(cursor.getString(17));
+        loc.setRoom(cursor.getString(18));
+        courseComponent.setInstructors(SerializableStringToArray(cursor.getString(19)));
+        return courseComponent;
+    }
+
     public List<CourseComponent> getAllCourseSchedules() {
         List<CourseComponent> ret = new ArrayList<>();
 
@@ -394,29 +420,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                CourseComponent courseComponent = new CourseComponent();
-                courseComponent.setClassNumber(cursor.getInt(1));
-                courseComponent.setSubject(cursor.getString(2));
-                courseComponent.setCatalogNumber(cursor.getString(3));
-                courseComponent.setTitle(cursor.getString(4));
-                courseComponent.setEnrollmentCapacity(cursor.getInt(5));
-                courseComponent.setEnrollmentTotal(cursor.getInt(6));
-                courseComponent.setWaitingCapacity(cursor.getInt(7));
-                courseComponent.setWaitingTotal(cursor.getInt(8));
-                courseComponent.setType(cursor.getString(9));
-                courseComponent.setSection(cursor.getString(10));
-                courseComponent.setStartTime(cursor.getString(11));
-                courseComponent.setEndTime(cursor.getString(12));
-                courseComponent.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
-                courseComponent.setIsClosed(cursor.getInt(14) == 1 ? true : false);
-                courseComponent.setIsTba(cursor.getInt(15) == 1 ? true : false);
-                courseComponent.setDay(cursor.getString(16));
-                Location loc = new Location();
-                loc.setBuilding(cursor.getString(16));
-                loc.setRoom(cursor.getString(17));
-                courseComponent.setInstructors(SerializableStringToArray(cursor.getString(18)));
-                // building room instructors
-
+                CourseComponent courseComponent = makeCourseComponent(cursor);
                 ret.add(courseComponent);
             } while (cursor.moveToNext());
         }
