@@ -60,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
         userCoursesList.setAdapter(new CourseListAdapter(MainActivity.this,
                 R.layout.course_list_item_view, currentCourses));
 
+        dbHandler.onUpgrade(dbHandler.getWritableDatabase(), 1,2);
         // Migration hack for now
+        /*
         try {
             dbHandler.getCoursesCount();
             dbHandler.getSchedulesCount();
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
             // recreate DB
             dbHandler.deleteAllCoures();
         }
+        */
 
 
         if(dbHandler.getCoursesCount() == 0) {

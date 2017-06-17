@@ -11,6 +11,7 @@ import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.ScheduledClass;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -19,6 +20,7 @@ import java.util.List;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String SERIALIZE_SEPARATOR = "_||_";
+    private static final String[] WEEKDAYS = {"M", "Th", "W", "T", "F"}; // Th must come before T.
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "coursesManager";
@@ -129,21 +131,37 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
                 // Date
                 List<ScheduledClass> scheduledClasses = courseSchedule.getScheduledClasses();
+                HashSet<String> dates = new HashSet<>();
+                // Stops when the first duplicate date (e.g "M" for Monday) is encountered
+                int count = 0;
                 for (ScheduledClass sClass: scheduledClasses) {
                     ScheduledClass.Date d = sClass.getDate();
-                    values.put(KEY_START_TIME, d.getStartTime());
-                    values.put(KEY_END_TIME, d.getEndTime());
-                    values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
-                    values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
-                    values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
-                    values.put(KEY_DAY, d.getDay());
-                    values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
-                    values.put(KEY_ROOM, sClass.getLocation().getRoom());
-                    values.put(KEY_START_DATE, d.getStartDate());
-                    values.put(KEY_END_DATE, d.getEndDate());
-                    values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
-                    db.insert(TABLE_SCHEDULES, null, values);
+                    String str = d.getWeekdays() == null ? "" : d.getWeekdays();
+                    StringBuilder sb = new StringBuilder(str);
+                    for (String weekday: WEEKDAYS) {
+                        if (sb.length() == 0) continue;
+                        if (dates.contains(weekday) || d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) break;
+
+                        int dayLoc = sb.indexOf(weekday);
+                        if (dayLoc != -1) {
+                            dates.add(d.getWeekdays());
+                            count++;
+                            sb.delete(dayLoc, dayLoc + weekday.length());
+                            values.put(KEY_START_TIME, d.getStartTime());
+                            values.put(KEY_END_TIME, d.getEndTime());
+                            values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
+                            values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
+                            values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
+                            values.put(KEY_DAY, d.getWeekdays());
+                            values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
+                            values.put(KEY_ROOM, sClass.getLocation().getRoom());
+                            values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
+                            db.insert(TABLE_SCHEDULES, null, values);
+                        }
+
+                    }
                 }
+                // Log.d("DATABASE", "Add " + count + " components to class (" + dates.toString() + ") " + courseSchedule.getTitle() + courseSchedule.getCatalogNumber());
 
             }
 
@@ -181,13 +199,16 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_WAITING_CAPACITY + " INTEGER," + KEY_WAITING_TOTAL + " INTEGER,"
                 + KEY_TYPE + " TEXT," + KEY_SESSION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
                 + KEY_END_TIME + " TEXT," + KEY_IS_CANCELLED + " INTEGER," + KEY_IS_CLOSED + " INTEGER,"
-                + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT" + ")";
+                + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT,"
+                + KEY_BUIDING + " TEXT," + KEY_ROOM+ " TEXT," + KEY_INSTRUCTORS+ " TEXT" + ")";
+
         db.execSQL(CREATE_SCHEDULES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES + "," + TABLE_SCHEDULES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULES);
         onCreate(db);
     }
 
