@@ -396,9 +396,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         courseComponent.setSection(cursor.getString(10));
         courseComponent.setStartTime(cursor.getString(11));
         courseComponent.setEndTime(cursor.getString(12));
-        courseComponent.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
-        courseComponent.setIsClosed(cursor.getInt(14) == 1 ? true : false);
-        courseComponent.setIsTba(cursor.getInt(15) == 1 ? true : false);
+        courseComponent.setIsCancelled(cursor.getInt(13) == 1);
+        courseComponent.setIsClosed(cursor.getInt(14) == 1);
+        courseComponent.setIsTba(cursor.getInt(15) == 1);
         courseComponent.setDay(cursor.getString(16));
         Location loc = new Location();
         loc.setBuilding(cursor.getString(17));

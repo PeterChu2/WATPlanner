@@ -10,7 +10,6 @@ import com.example.peterchu.watplanner.Database.DBHandlerCallback;
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseResponse;
-import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
@@ -136,10 +135,6 @@ class HomePresenter implements BasePresenter {
                 });
             } else {
                 Log.d("MyActivity", "Num schedules in db: " + dbHandler.getSchedulesCount());
-                List<CourseComponent> schedules = dbHandler.getCourseSchedule("ECE", "103");
-                for (CourseComponent c : schedules) {
-                    Log.d("MyActivity", c.toString());
-                }
             }
 
             isFirstLoad = false;
