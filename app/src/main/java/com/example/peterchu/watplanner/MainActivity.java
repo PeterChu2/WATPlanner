@@ -63,18 +63,15 @@ public class MainActivity extends AppCompatActivity {
 
         // dbHandler.onUpgrade(dbHandler.getWritableDatabase(), 1,2);
         // Migration hack for now
-
+       // dbHandler.destroyAndRecreateDb();
 
         try {
             dbHandler.getCoursesCount();
             dbHandler.getSchedulesCount();
         } catch (Exception e) {
             // recreate DB
-            dbHandler.deleteAllCoures();
+            dbHandler.destroyAndRecreateDb();
         }
-
-
-
 
         if(dbHandler.getCoursesCount() == 0) {
             Call<CourseResponse> call = apiService.getCourses("1175", Constants.API_KEY);

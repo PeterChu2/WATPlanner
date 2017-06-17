@@ -96,7 +96,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 db.insert(TABLE_COURSES, null, values);
             }
 
-            db.close();
             this.callback.onFinishTransaction(this.dbHandler);
         }
     }
@@ -167,7 +166,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
             }
 
-            db.close();
             this.callback.onFinishTransaction(this.dbHandler);
         }
     }
@@ -244,7 +242,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_TITLE, course.getTitle());
 
         db.insert(TABLE_COURSES, null, values);
-        db.close();
     }
 
     // Get course by id
@@ -494,7 +491,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteCourse(Course Course) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_COURSES, KEY_ID + " = ?", new String[] { String.valueOf(Course.getId()) });
-        db.close();
     }
 
     public void deleteAllCoures() {
@@ -504,13 +500,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public void destroyAndRecreateDb() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULES);
+        onCreate(db);
+    }
+
     public int getCoursesCount() {
         String countQuery = "SELECT * FROM " + TABLE_COURSES;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
         int count = cursor.getCount();
         cursor.close();
-        db.close();
         return count;
     }
 
@@ -520,7 +522,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(countQuery, null);
         int count = cursor.getCount();
         cursor.close();
-        db.close();
         return count;
     }
 }
