@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Views.MainActivity"
+            android:name=".home.HomeActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -23,11 +23,11 @@
         <activity
             android:name=".Views.CourseDetailActivity"
             android:label="@string/title_course_detail"
-            android:parentActivityName=".Views.MainActivity"
+            android:parentActivityName=".home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.peterchu.watplanner.Views.MainActivity" />
+                android:value="com.example.peterchu.watplanner.home.HomeActivity" />
         </activity>
     </application>
 
