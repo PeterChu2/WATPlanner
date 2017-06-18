@@ -163,4 +163,14 @@ class HomePresenter implements BasePresenter {
                 .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
                 .apply();
     }
+
+    public void onSearchOpened() {
+        List<Course> courses = dbHandler.getAllCourses();
+        homeFragment.addSearchSuggestions(courses);
+    }
+
+    public boolean onSubmitSearchQuery(String subject, String catalogNumber) {
+        Course c = dbHandler.getCourseByCourseCode(subject, catalogNumber);
+        return homeFragment.openDetailView(c == null ? null : c.getId());
+    }
 }

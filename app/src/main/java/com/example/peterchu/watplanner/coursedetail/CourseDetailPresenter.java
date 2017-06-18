@@ -58,6 +58,11 @@ class CourseDetailPresenter implements BasePresenter {
             }
 
             Course course = dbHandler.getCourse(courseId);
+            if (course == null) {
+                Log.d("CourseDetailPresenter", "course ID passed in does not exist!");
+                courseDetailFragment.getActivity().finish();
+                return;
+            }
             courseDetailFragment.setTitle(course.getName());
 //            final CourseSchedule courseSchedule = dbHandler.getCourseSchedule(course.getSubject(),
 //                    course.getNumber());
