@@ -3,13 +3,16 @@ package com.example.peterchu.watplanner.coursedetail;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
 import com.example.peterchu.watplanner.BaseView;
@@ -26,7 +29,9 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     private CourseSchedule mCourseSchedule;
     private CourseDetailPresenter presenter;
+
     private View rootView;
+    private FloatingActionButton fab;
 
     @Override
     public void setPresenter(CourseDetailPresenter presenter) {
@@ -42,7 +47,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
+        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,5 +93,39 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
     public void onStart() {
         super.onStart();
         presenter.start();
+    }
+
+    public void showAddButton() {
+        fab.setImageResource(R.drawable.ic_add_white_24px);
+    }
+
+    public void showRemoveButton() {
+        fab.setImageResource(R.drawable.ic_clear_white_24px);
+    }
+
+    public void rotateFabForward() {
+        ViewCompat.animate(fab)
+                .rotation(45.0F)
+                .withLayer()
+                .setDuration(300L)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+    }
+
+    public void rotateFabBackward() {
+        ViewCompat.animate(fab)
+                .rotation(0.0F)
+                .withLayer()
+                .setDuration(300L)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+    }
+
+    public void showRemovedMessage() {
+        Snackbar.make(rootView, "Course removed", Snackbar.LENGTH_SHORT).show();
+    }
+
+    public void showAddedMessage() {
+        Snackbar.make(rootView, "Course added", Snackbar.LENGTH_SHORT).show();
     }
 }

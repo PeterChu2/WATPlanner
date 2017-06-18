@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.peterchu.watplanner.Database.DatabaseHandler;
@@ -27,7 +28,8 @@ public class CourseDetailActivity extends AppCompatActivity {
         new CourseDetailPresenter(courseDetailFragment,
                 getIntent().getIntExtra(CourseDetailFragment.ARG_COURSE_ID, -1),
                 ApiClient.getClient().create(ApiInterface.class),
-                DatabaseHandler.getInstance(this));
+                DatabaseHandler.getInstance(this),
+                PreferenceManager.getDefaultSharedPreferences(this));
 
         getSupportFragmentManager()
                 .beginTransaction()
