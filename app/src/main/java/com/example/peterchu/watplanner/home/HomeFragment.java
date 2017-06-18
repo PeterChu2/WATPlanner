@@ -3,6 +3,7 @@ package com.example.peterchu.watplanner.home;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -23,6 +25,7 @@ import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     HomePresenter homePresenter;
     CourseListAdapter courseAdapter;
+    MaterialSearchView searchView;
 
     @Override
     public void setPresenter(HomePresenter presenter) {
@@ -62,11 +66,46 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Context context = view.getContext();
-                Intent intent = new Intent(context, CourseDetailActivity.class);
                 Course c = (Course) listView.getItemAtPosition(position);
-                intent.putExtra(CourseDetailFragment.ARG_COURSE_ID, c.getId());
-                context.startActivity(intent);
+                openDetailView(c.getId());
+            }
+        });
+
+        searchView = (MaterialSearchView) getActivity()
+                .findViewById(R.id.search_view);
+        searchView.setCursorDrawable(R.drawable.custom_cursor);
+        searchView.setSubmitOnClick(true);
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Matcher matcher = courseCodePattern.matcher(query);
+                if (!matcher.find()) {
+                    Toast.makeText(getContext(), "Invalid course code!", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                String subject = matcher.group(1);
+                String catalogNumber = matcher.group(2);
+
+                return homePresenter.onSubmitSearchQuery(subject, catalogNumber);
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //Do some magic
+                return false;
+            }
+        });
+
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                //Do some magic
+                homePresenter.onSearchOpened();
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                //Do some magic
             }
         });
 
@@ -127,4 +166,23 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         courseAdapter.notifyDataSetChanged();
     }
 
+    protected void addSearchSuggestions(List<Course> courses) {
+        List<String> courseNames = new ArrayList<String>();
+        for (Course course : courses) {
+            courseNames.add(course.getName());
+        }
+        searchView.setSuggestions(courseNames.toArray(new String[courseNames.size()]));
+    }
+
+    protected boolean openDetailView(Integer courseId) {
+        if (courseId == null) {
+            Toast.makeText(getContext(), "Course not found!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        Intent intent = new Intent(getContext(), CourseDetailActivity.class);
+        Context context = HomeFragment.this.getContext();
+        intent.putExtra(CourseDetailFragment.ARG_COURSE_ID, courseId);
+        context.startActivity(intent);
+        return true;
+    }
 }
