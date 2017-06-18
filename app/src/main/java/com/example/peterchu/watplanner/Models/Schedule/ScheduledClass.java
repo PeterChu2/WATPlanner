@@ -5,9 +5,11 @@ package com.example.peterchu.watplanner.Models.Schedule;
  */
 
 
-import java.util.List;
+import com.example.peterchu.watplanner.Models.Shared.Location;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
 
 public class ScheduledClass {
 
@@ -138,30 +140,4 @@ public class ScheduledClass {
 
     }
 
-    public class Location {
-
-        @SerializedName("building")
-        @Expose
-        private String building;
-        @SerializedName("room")
-        @Expose
-        private String room;
-
-        public String getBuilding() {
-            return building;
-        }
-
-        public void setBuilding(String building) {
-            this.building = building;
-        }
-
-        public String getRoom() {
-            return room;
-        }
-
-        public void setRoom(String room) {
-            this.room = room;
-        }
-
-    }
 }

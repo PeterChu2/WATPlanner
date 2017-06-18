@@ -7,10 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.peterchu.watplanner.Models.Course.Course;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.ScheduledClass;
+import com.example.peterchu.watplanner.Models.Shared.Location;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -18,6 +21,9 @@ import java.util.List;
  */
 
 public class DatabaseHandler extends SQLiteOpenHelper {
+    private static final String SERIALIZE_SEPARATOR = "_||_";
+    private static final String[] WEEKDAYS = {"M", "Th", "W", "T", "F"}; // Th must come before T.
+
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "coursesManager";
     private static final String TABLE_COURSES = "courses";
@@ -35,7 +41,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Courses Schedule Columns names
     private static final String KEY_CLASS_NUMBER = "classNumber";
     private static final String KEY_TYPE = "type"; // LEC / LAB / TUT
-    private static final String KEY_SESSION_NUMBER = "sessionNumber";
+    private static final String KEY_SECTION_NUMBER = "sectionNumber";
     private static final String KEY_ENROLLMENT_CAPACITY = "enrollmentCapacity";
     private static final String KEY_ENROLLMENT_TOTAL = "enrollmentTotal";
     private static final String KEY_WAITING_CAPACITY = "waitingCapacity";
@@ -46,6 +52,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_IS_CLOSED = "isClosed";
     private static final String KEY_IS_TBA = "isTba";
     private static final String KEY_DAY = "day";
+    private static final String KEY_BUIDING = "building";
+    private static final String KEY_ROOM = "room";
+    private static final String KEY_START_DATE = "startDate";
+    private static final String KEY_END_DATE = "endDate";
+    private static final String KEY_INSTRUCTORS = "instructors";
 
     private static DatabaseHandler dbSingleton;
 
@@ -85,7 +96,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 db.insert(TABLE_COURSES, null, values);
             }
 
-            db.close();
             this.callback.onFinishTransaction(this.dbHandler);
         }
     }
@@ -118,26 +128,60 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
                 String[] typeSection = courseSchedule.getSection().split(" ");
                 values.put(KEY_TYPE, typeSection[0]);
-                values.put(KEY_SESSION_NUMBER, typeSection[1]);
+                values.put(KEY_SECTION_NUMBER, typeSection[1]);
 
                 // Date
                 List<ScheduledClass> scheduledClasses = courseSchedule.getScheduledClasses();
+                HashSet<String> dates = new HashSet<>();
+                // Stops when the first duplicate date (e.g "M" for Monday) is encountered
+                int count = 0;
                 for (ScheduledClass sClass: scheduledClasses) {
                     ScheduledClass.Date d = sClass.getDate();
-                    values.put(KEY_START_TIME, d.getStartTime());
-                    values.put(KEY_END_TIME, d.getEndTime());
-                    values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
-                    values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
-                    values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
-                    values.put(KEY_DAY, d.getWeekdays());
-                    db.insert(TABLE_COURSES, null, values);
+                    String str = d.getWeekdays() == null ? "" : d.getWeekdays();
+                    StringBuilder sb = new StringBuilder(str);
+                    for (String weekday: WEEKDAYS) {
+                        if (sb.length() == 0) continue;
+                        if (dates.contains(weekday) || d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) break;
+
+                        int dayLoc = sb.indexOf(weekday);
+                        if (dayLoc != -1) {
+                            dates.add(weekday);
+                            count++;
+                            sb.delete(dayLoc, dayLoc + weekday.length());
+                            values.put(KEY_START_TIME, d.getStartTime());
+                            values.put(KEY_END_TIME, d.getEndTime());
+                            values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
+                            values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
+                            values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
+                            values.put(KEY_DAY, weekday);
+                            values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
+                            values.put(KEY_ROOM, sClass.getLocation().getRoom());
+                            values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
+                            db.insert(TABLE_SCHEDULES, null, values);
+                        }
+
+                    }
                 }
+                // Log.d("DATABASE", "Add " + count + " components to class (" + dates.toString() + ") " + courseSchedule.getTitle() + courseSchedule.getCatalogNumber());
 
             }
 
-            db.close();
             this.callback.onFinishTransaction(this.dbHandler);
         }
+    }
+
+    // Helper
+    private static String ListToSerializableString(List<String> in) {
+        StringBuilder sb = new StringBuilder();
+        for (String s: in) {
+            sb.append(s + SERIALIZE_SEPARATOR);
+        }
+        if (in.size() > 0) sb.delete(sb.length() - 1 - SERIALIZE_SEPARATOR.length(), sb.length() - 1);
+        return sb.toString();
+    }
+
+    private static String[] SerializableStringToArray(String in) {
+        return in.split(SERIALIZE_SEPARATOR);
     }
 
     // Creating Tables
@@ -153,15 +197,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_SUBJECT + " TEXT,"  + KEY_NUMBER + " TEXT," + KEY_TITLE + " TEXT,"
                 + KEY_ENROLLMENT_CAPACITY + " INTEGER," + KEY_ENROLLMENT_TOTAL + " INTEGER,"
                 + KEY_WAITING_CAPACITY + " INTEGER," + KEY_WAITING_TOTAL + " INTEGER,"
-                + KEY_TYPE + " TEXT," + KEY_SESSION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
+                + KEY_TYPE + " TEXT," + KEY_SECTION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
                 + KEY_END_TIME + " TEXT," + KEY_IS_CANCELLED + " INTEGER," + KEY_IS_CLOSED + " INTEGER,"
-                + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT" + ")";
+                + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT,"
+                + KEY_BUIDING + " TEXT," + KEY_ROOM+ " TEXT," + KEY_INSTRUCTORS+ " TEXT" + ")";
+
         db.execSQL(CREATE_SCHEDULES_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES + "," + TABLE_SCHEDULES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULES);
         onCreate(db);
     }
 
@@ -195,7 +242,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_TITLE, course.getTitle());
 
         db.insert(TABLE_COURSES, null, values);
-        db.close();
     }
 
     // Get course by id
@@ -335,8 +381,34 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
-    public List<CourseSchedule> getAllCourseSchedules() {
-        List<CourseSchedule> ret = new ArrayList<>();
+    private CourseComponent makeCourseComponent(Cursor cursor) {
+
+        CourseComponent courseComponent = new CourseComponent();
+        courseComponent.setClassNumber(cursor.getInt(1));
+        courseComponent.setSubject(cursor.getString(2));
+        courseComponent.setCatalogNumber(cursor.getString(3));
+        courseComponent.setTitle(cursor.getString(4));
+        courseComponent.setEnrollmentCapacity(cursor.getInt(5));
+        courseComponent.setEnrollmentTotal(cursor.getInt(6));
+        courseComponent.setWaitingCapacity(cursor.getInt(7));
+        courseComponent.setWaitingTotal(cursor.getInt(8));
+        courseComponent.setType(cursor.getString(9));
+        courseComponent.setSection(cursor.getString(10));
+        courseComponent.setStartTime(cursor.getString(11));
+        courseComponent.setEndTime(cursor.getString(12));
+        courseComponent.setIsCancelled(cursor.getInt(13) == 1);
+        courseComponent.setIsClosed(cursor.getInt(14) == 1);
+        courseComponent.setIsTba(cursor.getInt(15) == 1);
+        courseComponent.setDay(cursor.getString(16));
+        Location loc = new Location();
+        loc.setBuilding(cursor.getString(17));
+        loc.setRoom(cursor.getString(18));
+        courseComponent.setInstructors(SerializableStringToArray(cursor.getString(19)));
+        return courseComponent;
+    }
+
+    public List<CourseComponent> getAllCourseSchedules() {
+        List<CourseComponent> ret = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES;
 
@@ -345,68 +417,32 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                CourseSchedule courseSchedule = new CourseSchedule();
-                courseSchedule.setClassNumber(cursor.getInt(1));
-                courseSchedule.setSubject(cursor.getString(2));
-                courseSchedule.setCatalogNumber(cursor.getString(3));
-                courseSchedule.setTitle(cursor.getString(4));
-                courseSchedule.setEnrollmentCapacity(cursor.getInt(5));
-                courseSchedule.setEnrollmentTotal(cursor.getInt(6));
-                courseSchedule.setWaitingCapacity(cursor.getInt(7));
-                courseSchedule.setWaitingTotal(cursor.getInt(8));
-                courseSchedule.setType(cursor.getString(9));
-                courseSchedule.setSession(cursor.getString(10));
-                courseSchedule.setStartTime(cursor.getString(11));
-                courseSchedule.setEndTime(cursor.getString(12));
-                courseSchedule.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
-                courseSchedule.setIsClosed(cursor.getInt(14) == 1 ? true : false);
-                courseSchedule.setIsTba(cursor.getInt(15) == 1 ? true : false);
-                courseSchedule.setDay(cursor.getString(16));
-
-                ret.add(courseSchedule);
+                CourseComponent courseComponent = makeCourseComponent(cursor);
+                ret.add(courseComponent);
             } while (cursor.moveToNext());
         }
         cursor.close();
         return ret;
     }
 
-    public CourseSchedule getCourseSchedule(String subject, String catalogNumber) {
+    public List<CourseComponent> getCourseSchedule(String subject, String catalogNumber) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(
-                TABLE_SCHEDULES,
-                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
-                KEY_SUBJECT + "=? AND " + KEY_NUMBER + "=?",
-                new String[] { subject, catalogNumber },
-                null,
-                null,
-                null,
-                null
-        );
+        List<CourseComponent> ret = new ArrayList<>();
 
-        if (cursor == null) { return null; }
-        cursor.moveToFirst();
-        if (cursor.getCount() == 0) { return null; }
+        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SUBJECT + "=\"" + subject
+                + "\" AND " + KEY_NUMBER + "=\"" + catalogNumber + "\"";
+        Cursor cursor = db.rawQuery(selectQuery, null);
 
-        CourseSchedule courseSchedule = new CourseSchedule();
-        courseSchedule.setClassNumber(cursor.getInt(1));
-        courseSchedule.setSubject(cursor.getString(2));
-        courseSchedule.setCatalogNumber(cursor.getString(3));
-        courseSchedule.setTitle(cursor.getString(4));
-        courseSchedule.setEnrollmentCapacity(cursor.getInt(5));
-        courseSchedule.setEnrollmentTotal(cursor.getInt(6));
-        courseSchedule.setWaitingCapacity(cursor.getInt(7));
-        courseSchedule.setWaitingTotal(cursor.getInt(8));
-        courseSchedule.setType(cursor.getString(9));
-        courseSchedule.setSession(cursor.getString(10));
-        courseSchedule.setStartTime(cursor.getString(11));
-        courseSchedule.setEndTime(cursor.getString(12));
-        courseSchedule.setIsCancelled(cursor.getInt(13) == 1 ? true : false);
-        courseSchedule.setIsClosed(cursor.getInt(14) == 1 ? true : false);
-        courseSchedule.setIsTba(cursor.getInt(15) == 1 ? true : false);
-        courseSchedule.setDay(cursor.getString(16));
+        if (cursor.moveToFirst()) {
+            do {
+                CourseComponent courseComponent = makeCourseComponent(cursor);
+                ret.add(courseComponent);
+            } while (cursor.moveToNext());
+        }
         cursor.close();
-        return courseSchedule;
+
+        return ret;
     }
 
     public Course getCourseByCourseCode(String subject, String catalogNumber) {
@@ -436,7 +472,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteCourse(Course Course) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_COURSES, KEY_ID + " = ?", new String[] { String.valueOf(Course.getId()) });
-        db.close();
     }
 
     public void deleteAllCoures() {
@@ -446,8 +481,24 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public void destroyAndRecreateDb() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULES);
+        onCreate(db);
+    }
+
     public int getCoursesCount() {
         String countQuery = "SELECT * FROM " + TABLE_COURSES;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
+    public int getSchedulesCount() {
+        String countQuery = "SELECT * FROM " + TABLE_SCHEDULES;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
         int count = cursor.getCount();

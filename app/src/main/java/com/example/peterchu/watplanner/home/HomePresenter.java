@@ -46,6 +46,9 @@ class HomePresenter implements BasePresenter {
 
     @Override
     public void start() {
+        // TODO: remove in PROD :)
+        dbHandler.destroyAndRecreateDb();
+
         if (isFirstLoad) {
             final Set<String> savedCourses = sharedPreferences.getStringSet(
                     Constants.SHARED_PREFS_ADDED_COURSES,
@@ -95,24 +98,45 @@ class HomePresenter implements BasePresenter {
                 homeFragment.addCourses(courses);
             }
 
-            Call<CourseScheduleResponse> scheduleCall = apiInterface.getSubjectCourseSchedules(
-                    "1175", "ECE", Constants.API_KEY
-            );
-            scheduleCall.enqueue(new Callback<CourseScheduleResponse>() {
-                @Override
-                public void onResponse(Call<CourseScheduleResponse> call,
-                                       Response<CourseScheduleResponse> response) {
-                    Log.d("HomePresenter", response.toString());
-                    List<CourseSchedule> schedules = response.body().getData();
-                    Log.d("HomePresenter", "Number of courses schedules received: " + schedules.size());
-                }
 
-                @Override
-                public void onFailure(Call<CourseScheduleResponse> call, Throwable t) {
-                    // Log error here since request failed
-                    Log.e("HomePresenter", t.toString());
-                }
-            });
+            if(dbHandler.getSchedulesCount() == 0) {
+                Call<CourseScheduleResponse> scheduleCall = apiInterface.getSubjectCourseSchedules(
+                        "1175", "ECE", Constants.API_KEY
+                );
+                scheduleCall.enqueue(new Callback<CourseScheduleResponse>() {
+                    @Override
+                    public void onResponse(Call<CourseScheduleResponse> call,
+                                           Response<CourseScheduleResponse> response) {
+                        Log.d("HomePresenter", response.toString());
+                        List<CourseSchedule> schedules = response.body().getData();
+                        Log.d("HomePresenter", "Number of courses schedules received: " + schedules.size());
+                        try {
+                            Log.d("HomePresenter", "Trying to add course schedules");
+
+                            final DBHandlerCallback callback = new DBHandlerCallback() {
+                                @Override
+                                public void onFinishTransaction(DatabaseHandler dbHandler) {
+                                    Log.d("DBHandlerCallback", "Finished adding schedules count: " + dbHandler.getSchedulesCount());
+                                }
+                            };
+
+                            dbHandler.addSchedules(schedules, callback);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.e("DatabaseHandler", "Failed to add schedules!!");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<CourseScheduleResponse> call, Throwable t) {
+                        // Log error here since request failed
+                        Log.e("HomePresenter", t.toString());
+                    }
+                });
+            } else {
+                Log.d("MyActivity", "Num schedules in db: " + dbHandler.getSchedulesCount());
+            }
+
             isFirstLoad = false;
         }
     }
