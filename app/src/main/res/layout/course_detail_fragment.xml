@@ -41,6 +41,7 @@
         android:id="@+id/course_detail_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <RelativeLayout
@@ -72,7 +73,7 @@
                     android:layout_height="wrap_content"
                     card_view:cardBackgroundColor="@android:color/white"
                     card_view:cardUseCompatPadding="true"
-                    card_view:cardCornerRadius="4dp">
+                    card_view:cardCornerRadius="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -116,7 +117,7 @@
                     android:layout_height="wrap_content"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardBackgroundColor="@android:color/white"
-                    card_view:cardCornerRadius="4dp">
+                    card_view:cardCornerRadius="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -160,7 +161,7 @@
                     android:layout_height="wrap_content"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardBackgroundColor="@android:color/white"
-                    card_view:cardCornerRadius="4dp">
+                    card_view:cardCornerRadius="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -205,7 +206,7 @@
                     android:layout_height="wrap_content"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardBackgroundColor="@android:color/white"
-                    card_view:cardCornerRadius="4dp">
+                    card_view:cardCornerRadius="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -248,7 +249,7 @@
                     android:layout_height="wrap_content"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardBackgroundColor="@android:color/white"
-                    card_view:cardCornerRadius="4dp">
+                    card_view:cardCornerRadius="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
