@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Views.CourseDetailActivity"
+            android:name=".coursedetail.CourseDetailActivity"
             android:label="@string/title_course_detail"
             android:parentActivityName=".home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar">

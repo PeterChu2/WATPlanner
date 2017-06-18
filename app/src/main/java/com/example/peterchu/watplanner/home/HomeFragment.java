@@ -21,8 +21,8 @@ import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
-import com.example.peterchu.watplanner.Views.CourseDetailActivity;
-import com.example.peterchu.watplanner.Views.CourseDetailFragment;
+import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
+import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
 
 import java.util.ArrayList;
 import java.util.List;
