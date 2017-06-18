@@ -3,6 +3,7 @@ package com.example.peterchu.watplanner.coursedetail;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
@@ -122,10 +122,10 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
     }
 
     public void showRemovedMessage() {
-        Toast.makeText(getContext(), "Course removed", Toast.LENGTH_SHORT).show();
+        Snackbar.make(rootView, "Course removed", Snackbar.LENGTH_SHORT).show();
     }
 
     public void showAddedMessage() {
-        Toast.makeText(getContext(), "Course added", Toast.LENGTH_SHORT).show();
+        Snackbar.make(rootView, "Course added", Snackbar.LENGTH_SHORT).show();
     }
 }
