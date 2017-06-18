@@ -153,15 +153,16 @@ class HomePresenter implements BasePresenter {
             return;
         }
 
-        homeFragment.addCourses(Arrays.asList(course));
         Set<String> addedCourses = sharedPreferences.getStringSet(
                 Constants.SHARED_PREFS_ADDED_COURSES, new HashSet<String>());
-        addedCourses.add(String.valueOf(course.getId()));
-
-        sharedPreferences.edit()
-                .remove(Constants.SHARED_PREFS_ADDED_COURSES)
-                .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
-                .apply();
+        if (!addedCourses.contains(String.valueOf(course.getId()))) {
+            homeFragment.addCourses(Arrays.asList(course));
+            addedCourses.add(String.valueOf(course.getId()));
+            sharedPreferences.edit()
+                    .remove(Constants.SHARED_PREFS_ADDED_COURSES)
+                    .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
+                    .apply();
+        }
     }
 
     public void onSearchOpened() {
