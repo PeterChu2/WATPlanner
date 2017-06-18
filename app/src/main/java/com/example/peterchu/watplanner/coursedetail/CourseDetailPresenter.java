@@ -39,7 +39,7 @@ class CourseDetailPresenter implements BasePresenter {
     public void start() {
         if (isFirstLoad) {
             Course course = dbHandler.getCourse(courseId);
-            courseDetailFragment.setTitle(course.getName());\
+            courseDetailFragment.setTitle(course.getName());
 //            final CourseSchedule courseSchedule = dbHandler.getCourseSchedule(course.getSubject(),
 //                    course.getNumber());
             Call<CourseDetailsResponse> call = apiInterface.getCourseDetails(

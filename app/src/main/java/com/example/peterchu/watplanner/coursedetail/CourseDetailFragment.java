@@ -53,18 +53,16 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
     }
 
     public void setCourseDetails(CourseDetails courseDetails) {
-        CourseDetails mCourseDetails = courseDetails;
-
-        ((TextView) rootView.findViewById(R.id.course_title)).setText(mCourseDetails.getTitle());
+        ((TextView) rootView.findViewById(R.id.course_title)).setText(courseDetails.getTitle());
 //        ((TextView) rootView.findViewById(R.id.course_enrolment)).setText(
 //                String.format("%i/%i", mCourseSchedule.getEnrollmentCapacity(),
 //                        mCourseSchedule.getEnrollmentTotal()));
         ((TextView) rootView.findViewById(R.id.course_description)).setText(
-                mCourseDetails.getDescription());
+                courseDetails.getDescription());
         ((TextView) rootView.findViewById(R.id.course_prerequisites)).setText(
-                mCourseDetails.getPrerequisites());
+                courseDetails.getPrerequisites());
         ((TextView) rootView.findViewById(R.id.course_antirequisites)).setText(
-                mCourseDetails.getAntirequisites());
+                courseDetails.getAntirequisites());
     }
 
     public void setCourseSchedule(CourseSchedule courseSchedule) {
@@ -73,8 +71,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
+        if (item.getItemId() == android.R.id.home) {
             getActivity().finish();
             return true;
         }
