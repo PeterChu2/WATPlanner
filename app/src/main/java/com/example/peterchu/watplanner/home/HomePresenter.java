@@ -47,13 +47,19 @@ class HomePresenter implements BasePresenter {
     @Override
     public void start() {
         // TODO: remove in PROD :)
-        dbHandler.destroyAndRecreateDb();
+        // dbHandler.destroyAndRecreateDb();
+
+        final Set<String> savedCourses = sharedPreferences.getStringSet(
+                Constants.SHARED_PREFS_ADDED_COURSES,
+                new HashSet<String>());
+
+        if (!savedCourses.isEmpty()){
+            List<Course> courses = dbHandler.getCourses(
+                    savedCourses.toArray(new String[savedCourses.size()]));
+            homeFragment.addCourses(courses);
+        }
 
         if (isFirstLoad) {
-            final Set<String> savedCourses = sharedPreferences.getStringSet(
-                    Constants.SHARED_PREFS_ADDED_COURSES,
-                    new HashSet<String>());
-
             if (dbHandler.getCoursesCount() == 0) {
                 Call<CourseResponse> call = apiInterface.getCourses("1175", Constants.API_KEY);
 
@@ -92,10 +98,6 @@ class HomePresenter implements BasePresenter {
                         Log.e("HomePresenter", t.toString());
                     }
                 });
-            } else if (!savedCourses.isEmpty()){
-                List<Course> courses = dbHandler.getCourses(
-                        savedCourses.toArray(new String[savedCourses.size()]));
-                homeFragment.addCourses(courses);
             }
 
 
