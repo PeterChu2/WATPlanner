@@ -1,5 +1,6 @@
 package com.example.peterchu.watplanner.home;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,10 +8,14 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.PopupMenu;
 import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -49,9 +54,16 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         courseAdapter = new CourseListAdapter(getContext(),
                 R.layout.course_list_item_view,
-                new ArrayList<Course>());
+                new ArrayList<Course>(),
+                new CourseListAdapter.CourseRemoveClickListener() {
+                    @Override
+                    public void onCourseRemoveClicked(Course course) {
+                        homePresenter.onCourseRemoved(course);
+                    }
+                });
     }
 
     @Nullable
@@ -164,6 +176,12 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     public void addCourses(List<Course> courses) {
         courseAdapter.addAll(courses);
         courseAdapter.notifyDataSetChanged();
+    }
+
+    public void removeCourse(Course course) {
+        courseAdapter.remove(course);
+        courseAdapter.notifyDataSetChanged();
+        Snackbar.make(getActivity().findViewById(R.id.container), "Course removed", Snackbar.LENGTH_SHORT).show();
     }
 
     protected void addSearchSuggestions(List<Course> courses) {

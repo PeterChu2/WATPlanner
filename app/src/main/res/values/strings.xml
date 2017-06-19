@@ -11,4 +11,6 @@
     <string name="course_detail_view_enrolment_label">Enrolment</string>
     <string name="course_detail_view_prerequisites_label">Prerequisites</string>
     <string name="course_detail_view_antirequisites_label">Antirequisites</string>
+    <string name="delete_course">Delete</string>
+    <string name="searchbar_hint">ex. ECE 452</string>
 </resources>
