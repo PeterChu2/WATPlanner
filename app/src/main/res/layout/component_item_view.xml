@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/type_and_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Body1"
+        android:textColor="@color/materialText2"
+        tools:text="TUT 001" />
+
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Body1"
+        android:textColor="@color/materialText2"
+        tools:text="Location: RCH 101" />
+
+    <TextView
+        android:id="@+id/instructor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Body1"
+        android:textColor="@color/materialText2"
+        tools:text="Instructor: Ian Davis" />
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Body1"
+        android:textColor="@color/materialText2"
+        tools:text="Time: Wed, 9:30AM - 11:00PM" />
+
+    <TextView
+        android:id="@+id/enrolment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Body1"
+        android:textColor="@color/materialText2"
+        tools:text="Capacity: 100/120" />
+
+</LinearLayout>

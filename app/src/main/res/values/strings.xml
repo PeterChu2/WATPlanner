@@ -13,4 +13,11 @@
     <string name="course_detail_view_antirequisites_label">Antirequisites</string>
     <string name="delete_course">Delete</string>
     <string name="searchbar_hint">ex. ECE 452</string>
+
+    <string name="course_detail_enrolment_type">%1$s %2$s</string>
+    <string name="course_detail_enrolment_location">Location: %1$s</string>
+    <string name="course_detail_enrolment_instructor">Instructor: %1$s</string>
+    <string name="course_detail_enrolment_time">Time: %1$s, %2$s - %3$s</string>
+    <string name="course_detail_enrolment_capacity">Capacity: %1$s/%2$s</string>
+
 </resources>
