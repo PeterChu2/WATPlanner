@@ -146,52 +146,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:id="@+id/linearLayout"
-                android:paddingLeft="8dp"
-                android:paddingTop="8dp"
-                android:paddingRight="8dp"
                 android:layout_below="@+id/linearLayout4"
-                android:layout_alignParentStart="true">
-
-                <android.support.v7.widget.CardView
-                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/enrollment_card"
-                    android:layout_gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    card_view:cardUseCompatPadding="true"
-                    card_view:cardBackgroundColor="@android:color/white"
-                    card_view:cardCornerRadius="2dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="12dp">
-
-                        <TextView
-                            android:id="@+id/textView3"
-                            android:textColor="@color/materialText1"
-                            android:layout_height="match_parent"
-                            android:layout_width="match_parent"
-                            android:layout_marginBottom="10dp"
-                            android:text="@string/course_detail_view_enrolment_label" />
-
-                        <TextView
-                            android:id="@+id/course_enrolment"
-                            android:textColor="@color/materialText2"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            tools:context="com.example.peterchu.watplanner.Views.CourseDetailFragment" />
-                    </LinearLayout>
-                </android.support.v7.widget.CardView>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_below="@+id/linearLayout"
                 android:layout_alignParentStart="true"
                 android:id="@+id/linearLayout3"
                 android:paddingLeft="8dp"
@@ -232,6 +187,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linearLayout5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -269,6 +225,51 @@
                             android:textColor="@color/materialText2"
                             android:layout_height="match_parent"
                             android:layout_width="match_parent"
+                            tools:context="com.example.peterchu.watplanner.Views.CourseDetailFragment" />
+                    </LinearLayout>
+                </android.support.v7.widget.CardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/linearLayout"
+                android:paddingLeft="8dp"
+                android:paddingTop="8dp"
+                android:paddingRight="8dp"
+                android:layout_below="@id/linearLayout5"
+                android:layout_alignParentStart="true">
+
+                <android.support.v7.widget.CardView
+                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/enrollment_card"
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    card_view:cardUseCompatPadding="true"
+                    card_view:cardBackgroundColor="@android:color/white"
+                    card_view:cardCornerRadius="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/textView3"
+                            android:textColor="@color/materialText1"
+                            android:layout_height="match_parent"
+                            android:layout_width="match_parent"
+                            android:layout_marginBottom="10dp"
+                            android:text="@string/course_detail_view_enrolment_label" />
+
+                        <TextView
+                            android:id="@+id/course_enrolment"
+                            android:textColor="@color/materialText2"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             tools:context="com.example.peterchu.watplanner.Views.CourseDetailFragment" />
                     </LinearLayout>
                 </android.support.v7.widget.CardView>
