@@ -403,6 +403,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Location loc = new Location();
         loc.setBuilding(cursor.getString(17));
         loc.setRoom(cursor.getString(18));
+        courseComponent.setLocation(loc);
         courseComponent.setInstructors(SerializableStringToArray(cursor.getString(19)));
         return courseComponent;
     }

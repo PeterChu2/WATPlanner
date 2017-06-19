@@ -67,10 +67,11 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public void setCourseDetails(CourseDetails courseDetails) {
         ((TextView) rootView.findViewById(R.id.course_title)).setText(courseDetails.getTitle());
-        LinearLayout componentList = (LinearLayout) rootView.findViewById(R.id.course_component_list);
+        LinearLayout componentList = (LinearLayout) rootView.findViewById(R.id.enrolment_container);
 
         for (CourseComponent c : mCourseSchedule) {
             ComponentItemView componentItemView = new ComponentItemView(
+                    this.getContext(),
                     c.getType(),
                     c.getSection(),
                     c.getLocation(),
