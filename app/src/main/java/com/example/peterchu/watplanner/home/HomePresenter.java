@@ -160,6 +160,8 @@ class HomePresenter implements BasePresenter {
             addedCourses.add(String.valueOf(course.getId()));
             sharedPreferences.edit()
                     .remove(Constants.SHARED_PREFS_ADDED_COURSES)
+                    .apply();
+            sharedPreferences.edit()
                     .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
                     .apply();
         }
@@ -172,6 +174,8 @@ class HomePresenter implements BasePresenter {
         addedCourses.remove(String.valueOf(course.getId()));
         sharedPreferences.edit()
                 .remove(Constants.SHARED_PREFS_ADDED_COURSES)
+                .apply();
+        sharedPreferences.edit()
                 .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
                 .apply();
         homeFragment.removeCourse(course);
