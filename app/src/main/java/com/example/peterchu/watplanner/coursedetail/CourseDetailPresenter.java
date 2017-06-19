@@ -95,14 +95,13 @@ class CourseDetailPresenter implements BasePresenter {
         if (isAddedCourse) {
             isAddedCourse = false;
             courseDetailFragment.showRemovedMessage();
-            courseDetailFragment.rotateFabForward();
             addedCourses.remove(String.valueOf(courseId));
         } else {
             isAddedCourse = true;
             courseDetailFragment.showAddedMessage();
-            courseDetailFragment.rotateFabBackward();
             addedCourses.add(String.valueOf(courseId));
         }
+        courseDetailFragment.toggleFabRotation();
 
         sharedPreferences.edit()
                 .remove(Constants.SHARED_PREFS_ADDED_COURSES)

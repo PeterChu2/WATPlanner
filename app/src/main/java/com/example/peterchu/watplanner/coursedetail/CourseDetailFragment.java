@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     private View rootView;
     private FloatingActionButton fab;
+
+    private boolean isFabRotated = false;
 
     @Override
     public void setPresenter(CourseDetailPresenter presenter) {
@@ -103,19 +106,16 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         fab.setImageResource(R.drawable.ic_clear_white_24px);
     }
 
-    public void rotateFabForward() {
-        ViewCompat.animate(fab)
-                .rotation(45.0F)
-                .withLayer()
-                .setDuration(300L)
-                .setInterpolator(new DecelerateInterpolator())
-                .start();
-    }
-
-    public void rotateFabBackward() {
-        ViewCompat.animate(fab)
-                .rotation(0.0F)
-                .withLayer()
+    public void toggleFabRotation() {
+        ViewPropertyAnimatorCompat animator = ViewCompat.animate(fab);
+        if (isFabRotated) {
+            animator = animator.rotation(0.0F);
+            isFabRotated = false;
+        } else {
+            animator = animator.rotation(45.0F);
+            isFabRotated = true;
+        }
+        animator.withLayer()
                 .setDuration(300L)
                 .setInterpolator(new DecelerateInterpolator())
                 .start();
