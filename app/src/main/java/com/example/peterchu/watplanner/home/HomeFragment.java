@@ -71,8 +71,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             }
         });
 
-        searchView = (MaterialSearchView) getActivity()
-                .findViewById(R.id.search_view);
+        searchView = (MaterialSearchView) getActivity().findViewById(R.id.search_view);
         searchView.setCursorDrawable(R.drawable.custom_cursor);
         searchView.setSubmitOnClick(true);
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
