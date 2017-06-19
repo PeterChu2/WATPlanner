@@ -58,16 +58,6 @@ public class CourseListAdapter extends ArrayAdapter<Course> {
         });
 
         // TODO: check for conflicts here and set this appropriately
-        // HACK for demo -- ENVS 200 and ECE 458 actually conflict
-        Set<String> courseNameSet = new HashSet<String>();
-        for(int i = 0; i < this.getCount(); i++) {
-            Course c = getItem(i);
-            courseNameSet.add(c.getName());
-        }
-        if (courseNameSet.contains("ECE 458") && courseNameSet.contains("ENVS 200") &&
-                (course.getName().equals("ECE 458") || course.getName().equals("ENVS 200"))) {
-            conflictFlagTextView.setVisibility(View.VISIBLE);
-        }
         return convertView;
     }
 
