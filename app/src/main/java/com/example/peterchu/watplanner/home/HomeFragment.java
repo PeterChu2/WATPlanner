@@ -203,4 +203,8 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         context.startActivity(intent);
         return true;
     }
+
+    public void emptyCourseList() {
+        this.courseAdapter.clear();
+    }
 }

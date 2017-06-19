@@ -56,6 +56,7 @@ class HomePresenter implements BasePresenter {
         if (!savedCourses.isEmpty()){
             List<Course> courses = dbHandler.getCourses(
                     savedCourses.toArray(new String[savedCourses.size()]));
+            homeFragment.emptyCourseList();
             homeFragment.addCourses(courses);
         }
 
@@ -77,6 +78,7 @@ class HomePresenter implements BasePresenter {
                             }
                         }
 
+                        homeFragment.emptyCourseList();
                         homeFragment.addCourses(userCourses);
                         try {
                             Log.d("HomePresenter", "Trying to add courses");
