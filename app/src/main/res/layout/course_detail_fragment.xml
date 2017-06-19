@@ -267,6 +267,8 @@
                             android:id="@+id/enrolment_container"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:divider="?android:dividerHorizontal"
+                            android:showDividers="middle"
                             android:orientation="vertical" />
 
                     </LinearLayout>
