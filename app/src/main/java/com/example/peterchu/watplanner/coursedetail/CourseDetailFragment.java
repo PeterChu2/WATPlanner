@@ -18,8 +18,11 @@ import android.widget.TextView;
 
 import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.R;
+
+import java.util.List;
 
 /**
  * A fragment representing a single Course detail screen.
@@ -28,7 +31,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public static final String ARG_COURSE_ID = "course_id";
 
-    private CourseSchedule mCourseSchedule;
+    private List<CourseComponent> mCourseSchedule;
     private CourseDetailPresenter presenter;
 
     private View rootView;
@@ -62,9 +65,13 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public void setCourseDetails(CourseDetails courseDetails) {
         ((TextView) rootView.findViewById(R.id.course_title)).setText(courseDetails.getTitle());
-//        ((TextView) rootView.findViewById(R.id.course_enrolment)).setText(
-//                String.format("%i/%i", mCourseSchedule.getEnrollmentCapacity(),
-//                        mCourseSchedule.getEnrollmentTotal()));
+        StringBuilder sb = new StringBuilder();
+        for (CourseComponent c : mCourseSchedule) {
+
+            sb.append(String.format("%s:%d/%d\n", c.getSection(), c.getEnrollmentCapacity(),
+                    c.getEnrollmentTotal()));
+        }
+//        ((TextView) rootView.findViewById(R.id.course_enrolment)).setText(sb.toString());
         ((TextView) rootView.findViewById(R.id.course_description)).setText(
                 courseDetails.getDescription());
         ((TextView) rootView.findViewById(R.id.course_prerequisites)).setText(
@@ -73,7 +80,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
                 courseDetails.getAntirequisites());
     }
 
-    public void setCourseSchedule(CourseSchedule courseSchedule) {
+    public void setCourseSchedule(List<CourseComponent> courseSchedule) {
         mCourseSchedule = courseSchedule;
     }
 

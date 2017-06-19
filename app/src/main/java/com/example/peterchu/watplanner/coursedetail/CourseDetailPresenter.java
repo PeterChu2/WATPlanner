@@ -9,9 +9,12 @@ import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Course.CourseDetailsResponse;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
+import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -64,8 +67,9 @@ class CourseDetailPresenter implements BasePresenter {
                 return;
             }
             courseDetailFragment.setTitle(course.getName());
-//            final CourseSchedule courseSchedule = dbHandler.getCourseSchedule(course.getSubject(),
-//                    course.getNumber());
+            final List<CourseComponent> courseSchedule = dbHandler.getCourseSchedule(
+                    course.getSubject(), course.getNumber());
+            courseDetailFragment.setCourseSchedule(courseSchedule);
             Call<CourseDetailsResponse> call = apiInterface.getCourseDetails(
                     course.getSubject(),
                     course.getNumber(),
