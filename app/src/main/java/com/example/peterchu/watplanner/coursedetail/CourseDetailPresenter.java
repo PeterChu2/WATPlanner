@@ -109,6 +109,8 @@ class CourseDetailPresenter implements BasePresenter {
 
         sharedPreferences.edit()
                 .remove(Constants.SHARED_PREFS_ADDED_COURSES)
+                .apply();
+        sharedPreferences.edit()
                 .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
                 .apply();
     }
