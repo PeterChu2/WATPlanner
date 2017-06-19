@@ -14,6 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.peterchu.watplanner.BaseView;
@@ -65,13 +67,23 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public void setCourseDetails(CourseDetails courseDetails) {
         ((TextView) rootView.findViewById(R.id.course_title)).setText(courseDetails.getTitle());
-        StringBuilder sb = new StringBuilder();
-        for (CourseComponent c : mCourseSchedule) {
+        LinearLayout componentList = (LinearLayout) rootView.findViewById(R.id.course_component_list);
 
-            sb.append(String.format("%s:%d/%d\n", c.getSection(), c.getEnrollmentCapacity(),
-                    c.getEnrollmentTotal()));
+        for (CourseComponent c : mCourseSchedule) {
+            ComponentItemView componentItemView = new ComponentItemView(
+                    c.getType(),
+                    c.getSection(),
+                    c.getLocation(),
+                    c.getDay(),
+                    c.getStartTime(),
+                    c.getEndTime(),
+                    c.getInstructors(),
+                    c.getEnrollmentCapacity(),
+                    c.getEnrollmentTotal()
+            );
+            componentList.addView(componentItemView);
         }
-//        ((TextView) rootView.findViewById(R.id.course_enrolment)).setText(sb.toString());
+
         ((TextView) rootView.findViewById(R.id.course_description)).setText(
                 courseDetails.getDescription());
         ((TextView) rootView.findViewById(R.id.course_prerequisites)).setText(
