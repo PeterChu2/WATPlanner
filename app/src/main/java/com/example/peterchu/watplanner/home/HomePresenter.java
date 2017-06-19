@@ -165,6 +165,18 @@ class HomePresenter implements BasePresenter {
         }
     }
 
+    public void onCourseRemoved(Course course) {
+        Set<String> addedCourses = sharedPreferences.getStringSet(
+                Constants.SHARED_PREFS_ADDED_COURSES,
+                new HashSet<String>());
+        addedCourses.remove(String.valueOf(course.getId()));
+        sharedPreferences.edit()
+                .remove(Constants.SHARED_PREFS_ADDED_COURSES)
+                .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
+                .apply();
+        homeFragment.removeCourse(course);
+    }
+
     public void onSearchOpened() {
         List<Course> courses = dbHandler.getAllCourses();
         homeFragment.addSearchSuggestions(courses);

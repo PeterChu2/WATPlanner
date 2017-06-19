@@ -5,4 +5,7 @@
     <color name="colorPrimaryDark">#C7A300</color>
     <color name="colorAccent">#d50000</color>
     <color name="search_layover_bg">#50000000</color>
+    <color name="materialLightBackground">#fafafa</color>
+    <color name="materialText1">#D9000000</color>
+    <color name="materialText2">#8C000000</color>
 </resources>

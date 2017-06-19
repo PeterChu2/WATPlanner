@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fafafa"
     android:orientation="horizontal"
     tools:context="com.example.peterchu.watplanner.home.HomeActivity">
 
@@ -12,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/toolbar_container"
+        android:paddingTop="10dp"
         android:background="@android:color/white">
     </FrameLayout>
 
@@ -22,6 +22,7 @@
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
+            style="@style/ToolBarTheme"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize" />
 

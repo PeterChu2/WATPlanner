@@ -6,6 +6,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:itemBackground">@color/materialLightBackground</item>
+        <item name="android:itemTextAppearance">@style/MaterialLightMenuBarTheme</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -17,7 +19,14 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="ToolBarTheme">
+        <item name="android:background">@color/colorPrimary</item>
+    </style>
+
     <style name="MaterialSearchViewStyle">
+
+        <!-- Change search bar background color -->
+        <item name="searchBackground">@color/colorPrimary</item>
 
         <!-- Change clear text icon -->
         <item name="searchCloseIcon">@drawable/ic_action_navigation_close_inverted</item>
@@ -32,6 +41,11 @@
         <item name="searchSuggestionBackground">@android:color/white</item>
 
         <!-- Hint for edit text -->
-        <item name="android:hint">@string/search_hint</item>
+        <item name="android:hint">@string/searchbar_hint</item>
     </style>
+
+    <style name="MaterialLightMenuBarTheme" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
+        <item name="android:textColor">@color/materialText2</item>
+    </style>
+
 </resources>
