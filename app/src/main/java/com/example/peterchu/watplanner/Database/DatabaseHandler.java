@@ -21,7 +21,7 @@ import java.util.List;
  */
 
 public class DatabaseHandler extends SQLiteOpenHelper {
-    private static final String SERIALIZE_SEPARATOR = "_||_";
+    private static final String SERIALIZE_SEPARATOR = "_@@_";
     private static final String[] WEEKDAYS = {"M", "Th", "W", "T", "F"}; // Th must come before T.
 
     private static final int DATABASE_VERSION = 1;
@@ -176,7 +176,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         for (String s: in) {
             sb.append(s + SERIALIZE_SEPARATOR);
         }
-        if (in.size() > 0) sb.delete(sb.length() - 1 - SERIALIZE_SEPARATOR.length(), sb.length() - 1);
+        if (in.size() > 0) sb.delete(sb.length() - SERIALIZE_SEPARATOR.length(), sb.length());
         return sb.toString();
     }
 
