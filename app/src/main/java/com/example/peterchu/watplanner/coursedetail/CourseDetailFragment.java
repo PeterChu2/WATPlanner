@@ -1,5 +1,6 @@
 package com.example.peterchu.watplanner.coursedetail;
 
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -26,6 +27,7 @@ import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -89,7 +91,12 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         WeekView weekView = (WeekView) rootView.findViewById(R.id.weekView);
 
         // Set an action when any event is clicked.
-//        weekView.setOnEventClickListener(mEventClickListener);
+        weekView.setOnEventClickListener(new WeekView.EventClickListener() {
+            @Override
+            public void onEventClick(WeekViewEvent event, RectF eventRect) {
+
+            }
+        });
 
         // The week view has infinite scrolling horizontally. We have to provide the events of a
         // month every time the month changes on the week view.
@@ -103,7 +110,10 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
                 return events;
             }
         });
-        weekView.setMinimumHeight(5000);
+        weekView.setMinimumHeight(1200);
+        weekView.setFirstDayOfWeek(Calendar.MONDAY);
+        weekView.setShowNowLine(false);
+        weekView.goToHour(8);
 
         ((TextView) rootView.findViewById(R.id.course_description)).setText(
                 courseDetails.getDescription());
