@@ -1,5 +1,6 @@
 package com.example.peterchu.watplanner.coursedetail;
 
+import android.app.Dialog;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -22,6 +23,7 @@ import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
 import com.example.peterchu.watplanner.BaseView;
+import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
@@ -72,21 +74,6 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
     public void setCourseDetails(CourseDetails courseDetails) {
         ((TextView) rootView.findViewById(R.id.course_title)).setText(courseDetails.getTitle());
 
-        for (CourseComponent c : mCourseSchedule) {
-            ComponentItemView componentItemView = new ComponentItemView(
-                    this.getContext(),
-                    c.getType(),
-                    c.getSection(),
-                    c.getLocation(),
-                    c.getDay(),
-                    c.getStartTime(),
-                    c.getEndTime(),
-                    c.getInstructors(),
-                    c.getEnrollmentCapacity(),
-                    c.getEnrollmentTotal()
-            );
-        }
-
         // Get a reference for the week view in the layout.
         WeekView weekView = (WeekView) rootView.findViewById(R.id.weekView);
 
@@ -94,7 +81,13 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         weekView.setOnEventClickListener(new WeekView.EventClickListener() {
             @Override
             public void onEventClick(WeekViewEvent event, RectF eventRect) {
-
+                CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
+                ComponentItemView componentItemView = new ComponentItemView(
+                        CourseDetailFragment.this.getContext(), courseComponent
+                );
+                final Dialog d = new Dialog(CourseDetailFragment.this.getContext());
+                d.setContentView(componentItemView);
+                d.show();
             }
         });
 

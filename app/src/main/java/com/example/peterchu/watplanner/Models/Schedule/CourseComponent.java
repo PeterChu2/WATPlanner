@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.Models.Schedule;
 
 import com.alamkanak.weekview.WeekViewEvent;
+import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Shared.Location;
 
 import java.text.DateFormat;
@@ -225,7 +226,7 @@ public class CourseComponent {
             }
             while (date.get(Calendar.MONTH) == month) {
                 if (Integer.valueOf(date.get(Calendar.DAY_OF_WEEK)) == this.getDayOfWeek()) {
-                    WeekViewEvent event = new WeekViewEvent();
+                    WeekViewCourseEvent event = new WeekViewCourseEvent(this);
                     Calendar startTime = Calendar.getInstance();
                     Calendar endTime = Calendar.getInstance();
 
