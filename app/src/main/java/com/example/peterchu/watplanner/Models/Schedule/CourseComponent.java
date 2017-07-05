@@ -227,14 +227,8 @@ public class CourseComponent {
             while (date.get(Calendar.MONTH) == month) {
                 if (Integer.valueOf(date.get(Calendar.DAY_OF_WEEK)) == this.getDayOfWeek()) {
                     WeekViewCourseEvent event = new WeekViewCourseEvent(this);
-                    Calendar startTime = Calendar.getInstance();
-                    Calendar endTime = Calendar.getInstance();
-
-                    startTime.set(Calendar.YEAR, date.get(Calendar.YEAR));
-                    startTime.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
-                    startTime.set(Calendar.MONTH, date.get(Calendar.MONTH));
-                    startTime.set(Calendar.HOUR_OF_DAY, eventStartTime.getHours());
-                    startTime.set(Calendar.MINUTE, eventStartTime.getMinutes());
+                    Calendar startTime = getCalendarDate(eventStartTime, date);
+                    Calendar endTime = getCalendarDate(eventEndTime, date);
 
                     endTime.set(Calendar.YEAR, date.get(Calendar.YEAR));
                     endTime.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
@@ -277,5 +271,15 @@ public class CourseComponent {
             default:
                 return null;
         }
+    }
+
+    private Calendar getCalendarDate(Date eventTime, Calendar eventDate) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, eventDate.get(Calendar.YEAR));
+        cal.set(Calendar.DAY_OF_MONTH, eventDate.get(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.MONTH, eventDate.get(Calendar.MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, eventTime.getHours());
+        cal.set(Calendar.MINUTE, eventTime.getMinutes());
+        return cal;
     }
 }
