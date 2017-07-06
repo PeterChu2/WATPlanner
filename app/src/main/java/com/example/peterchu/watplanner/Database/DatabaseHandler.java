@@ -15,6 +15,7 @@ import com.example.peterchu.watplanner.Models.Shared.Location;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Timothy Tong on 6/11/17.
@@ -132,34 +133,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
                 // Date
                 List<ScheduledClass> scheduledClasses = courseSchedule.getScheduledClasses();
-                HashSet<String> dates = new HashSet<>();
-                // Stops when the first duplicate date (e.g "M" for Monday) is encountered
-                int count = 0;
                 for (ScheduledClass sClass: scheduledClasses) {
                     ScheduledClass.Date d = sClass.getDate();
+                    if (d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) continue;
+
                     String str = d.getWeekdays() == null ? "" : d.getWeekdays();
-                    StringBuilder sb = new StringBuilder(str);
-                    for (String weekday: WEEKDAYS) {
-                        if (sb.length() == 0) continue;
-                        if (dates.contains(weekday) || d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) break;
-
-                        int dayLoc = sb.indexOf(weekday);
-                        if (dayLoc != -1) {
-                            dates.add(weekday);
-                            count++;
-                            sb.delete(dayLoc, dayLoc + weekday.length());
-                            values.put(KEY_START_TIME, d.getStartTime());
-                            values.put(KEY_END_TIME, d.getEndTime());
-                            values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
-                            values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
-                            values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
-                            values.put(KEY_DAY, weekday);
-                            values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
-                            values.put(KEY_ROOM, sClass.getLocation().getRoom());
-                            values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
-                            db.insert(TABLE_SCHEDULES, null, values);
-                        }
-
+                    Set<String> componentDays = tokenizeDays(str);
+                    for (String weekday: componentDays) {
+                        values.put(KEY_START_TIME, d.getStartTime());
+                        values.put(KEY_END_TIME, d.getEndTime());
+                        values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
+                        values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
+                        values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
+                        values.put(KEY_DAY, weekday);
+                        values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
+                        values.put(KEY_ROOM, sClass.getLocation().getRoom());
+                        values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
+                        db.insert(TABLE_SCHEDULES, null, values);
                     }
                 }
                 // Log.d("DATABASE", "Add " + count + " components to class (" + dates.toString() + ") " + courseSchedule.getTitle() + courseSchedule.getCatalogNumber());
@@ -167,6 +157,21 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             }
 
             this.callback.onFinishTransaction(this.dbHandler);
+        }
+
+        // string is in format TTh, MF, etc.
+        private Set<String> tokenizeDays (String str) {
+            Set<String> days = new HashSet<String>();
+            if (str.length() == 0) {
+                return days;
+            }
+            for (String day : WEEKDAYS) {
+                if (str.contains(day)) {
+                    days.add(day);
+                }
+                str = str.replaceFirst(day, "");
+            }
+            return days;
         }
     }
 
