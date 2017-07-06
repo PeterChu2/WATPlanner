@@ -221,6 +221,7 @@ public class CourseComponent {
             date.set(Calendar.DAY_OF_MONTH, 1);
 
             Integer dayOfWeek = this.getDayOfWeek();
+            // hack for current term - should update with term month data at some point
             if (dayOfWeek == null || (month < Calendar.MAY) || (month > Calendar.AUGUST)) {
                 return new ArrayList<WeekViewEvent>();
             }
