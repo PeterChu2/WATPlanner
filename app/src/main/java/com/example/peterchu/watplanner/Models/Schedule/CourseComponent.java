@@ -1,12 +1,24 @@
 package com.example.peterchu.watplanner.Models.Schedule;
 
+import com.alamkanak.weekview.WeekViewEvent;
+import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Shared.Location;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by Timothy Tong on 6/16/17.
  */
 
 public class CourseComponent {
+    private static final DateFormat componentDateFormat = new SimpleDateFormat( "HH:mm");
 
     private String subject;
 
@@ -194,5 +206,81 @@ public class CourseComponent {
 
     public String toString() {
         return String.format("%s %s - %s %s - %s %s~%s", subject, catalogNumber, type, section, day, startTime, endTime);
+    }
+
+    public List<WeekViewEvent> toWeekViewEvents(int month) {
+        List<WeekViewEvent> weekViewEvents = new ArrayList<WeekViewEvent>();
+        try {
+            Date eventStartTime = componentDateFormat.parse(this.startTime);
+            Date eventEndTime = componentDateFormat.parse(this.endTime);
+            String eventName = String.format("%s %s %s", subject, catalogNumber, type);
+
+            Calendar date = Calendar.getInstance();
+            date.set(Calendar.MONTH, month);
+            date.set(Calendar.YEAR, 2017);
+            date.set(Calendar.DAY_OF_MONTH, 1);
+
+            Integer dayOfWeek = this.getDayOfWeek();
+            // hack for current term - should update with term month data at some point
+            if (dayOfWeek == null || (month < Calendar.MAY) || (month > Calendar.AUGUST)) {
+                return new ArrayList<WeekViewEvent>();
+            }
+            while (date.get(Calendar.MONTH) == month) {
+                if (Integer.valueOf(date.get(Calendar.DAY_OF_WEEK)) == this.getDayOfWeek()) {
+                    WeekViewCourseEvent event = new WeekViewCourseEvent(this);
+                    Calendar startTime = getCalendarDate(eventStartTime, date);
+                    Calendar endTime = getCalendarDate(eventEndTime, date);
+
+                    endTime.set(Calendar.YEAR, date.get(Calendar.YEAR));
+                    endTime.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
+                    endTime.set(Calendar.MONTH, date.get(Calendar.MONTH));
+                    endTime.set(Calendar.HOUR_OF_DAY, eventEndTime.getHours());
+                    endTime.set(Calendar.MINUTE, eventEndTime.getMinutes());
+
+                    event.setStartTime(startTime);
+                    event.setEndTime(endTime);
+                    event.setLocation(location.toString());
+                    event.setName(eventName);
+                    weekViewEvents.add(event);
+                }
+                date.add(Calendar.DATE, 1);
+            }
+
+        } catch (Exception ParseException) {
+            return new ArrayList<WeekViewEvent>();
+        }
+
+        return weekViewEvents;
+    }
+
+    private Integer getDayOfWeek() {
+        switch (this.day.toUpperCase()) {
+            case "M":
+                return Calendar.MONDAY;
+            case "T":
+                return Calendar.TUESDAY;
+            case "W":
+                return Calendar.WEDNESDAY;
+            case "TH":
+                return Calendar.THURSDAY;
+            case "F":
+                return Calendar.FRIDAY;
+            case "S":
+                return Calendar.SATURDAY;
+            case "SU":
+                return Calendar.SUNDAY;
+            default:
+                return null;
+        }
+    }
+
+    private Calendar getCalendarDate(Date eventTime, Calendar eventDate) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, eventDate.get(Calendar.YEAR));
+        cal.set(Calendar.DAY_OF_MONTH, eventDate.get(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.MONTH, eventDate.get(Calendar.MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, eventTime.getHours());
+        cal.set(Calendar.MINUTE, eventTime.getMinutes());
+        return cal;
     }
 }
