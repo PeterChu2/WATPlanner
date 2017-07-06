@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.Models.Shared.Location;
 import com.example.peterchu.watplanner.R;
 
@@ -26,34 +27,33 @@ class ComponentItemView extends FrameLayout {
     private Integer mEnrollmentCapacity;
     private Integer mEnrollmentTotal;
 
-    public ComponentItemView(Context context, String type, String section, Location location,
-                             String day, String startTime, String endTime, String[] instructors,
-                             Integer enrollmentCapacity, Integer enrollmentTotal) {
+    public ComponentItemView(Context context, CourseComponent courseComponent) {
         super(context);
         mContext = context;
-        mType = type;
-        mSection = section;
-        mLocation = location;
-        mDay = day;
-        mStartTime = startTime;
-        mEndTime = endTime;
-        mInstructors = instructors;
-        mEnrollmentCapacity = enrollmentCapacity;
-        mEnrollmentTotal = enrollmentTotal;
+        mType = courseComponent.getType();
+        mSection = courseComponent.getSection();
+        mLocation = courseComponent.getLocation();
+        mDay = courseComponent.getDay();
+        mStartTime = courseComponent.getStartTime();
+        mEndTime = courseComponent.getEndTime();
+        mInstructors = courseComponent.getInstructors();
+        mEnrollmentCapacity = courseComponent.getEnrollmentCapacity();
+        mEnrollmentTotal = courseComponent.getEnrollmentTotal();
         FrameLayout rootView = (FrameLayout) inflate(context, R.layout.component_item_view, this);
         TextView typeAndSection = (TextView) rootView.findViewById(R.id.type_and_section);
         typeAndSection.setText(String.format("%s %s", mType, mSection));
         TextView locationTextView = (TextView) rootView.findViewById(R.id.location);
-        String locationText = location != null ?String.format("%s, %s", location.getBuilding(),
-                location.getRoom())
+        String locationText = mLocation != null ? String.format("Location: %s, %s", mLocation.getBuilding(),
+                mLocation.getRoom())
                 : "";
         locationTextView.setText(locationText);
         TextView dayTextView = (TextView) rootView.findViewById(R.id.time);
         dayTextView.setText(String.format("%s, %s - %s", mDay, mStartTime, mEndTime));
         TextView instructor = (TextView) rootView.findViewById(R.id.instructor);
-        instructor.setText("Instructor(s): " + TextUtils.join("", mInstructors));
+        instructor.setText("Instructor(s): " + TextUtils.join(",", mInstructors));
         TextView enrollment = (TextView) rootView.findViewById(R.id.enrolment);
-        String enrollmentRatio = String.format("%d/%d", enrollmentTotal, enrollmentCapacity);
+        String enrollmentRatio = String.format("enrollment: %d/%d", mEnrollmentTotal,
+                mEnrollmentCapacity);
         enrollment.setText(enrollmentRatio);
     }
 
