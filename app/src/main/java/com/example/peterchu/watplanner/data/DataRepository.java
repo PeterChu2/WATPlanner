@@ -12,8 +12,7 @@ import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Course.CourseDetailsResponse;
 import com.example.peterchu.watplanner.Models.Course.CourseResponse;
-import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
-import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
+import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleComponent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
@@ -208,7 +207,7 @@ public class DataRepository {
     }
 
     public interface CourseScheduleCallback {
-        void onCourseScheduleRetrieved(List<CourseSchedule> schedules);
+        void onCourseScheduleRetrieved(List<CourseScheduleComponent> schedules);
 
         void onFailure();
     }

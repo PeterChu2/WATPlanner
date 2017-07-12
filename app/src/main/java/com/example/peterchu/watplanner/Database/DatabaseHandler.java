@@ -7,9 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.peterchu.watplanner.Models.Course.Course;
-import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
-import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
-import com.example.peterchu.watplanner.Models.Schedule.ScheduledClass;
 import com.example.peterchu.watplanner.Models.Shared.Location;
 
 import java.util.ArrayList;
@@ -23,7 +20,6 @@ import java.util.Set;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String SERIALIZE_SEPARATOR = "_@@_";
-    private static final String[] WEEKDAYS = {"M", "Th", "W", "T", "F"}; // Th must come before T.
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "coursesManager";
@@ -101,63 +97,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
-    private class AddScheduleHelper implements Runnable {
-        private List<CourseSchedule> schedules;
-        DatabaseHandler dbHandler;
-        DBHandlerCallback callback;
-
-        public AddScheduleHelper(List<CourseSchedule> schedules, DatabaseHandler dbHandler, DBHandlerCallback callback) {
-            this.schedules = schedules;
-            this.dbHandler = dbHandler;
-            this.callback = callback;
-        }
-
-        @Override
-        public void run() {
-            SQLiteDatabase db = this.dbHandler.getWritableDatabase();
-
-            for (CourseSchedule courseSchedule : this.schedules) {
-                ContentValues values = new ContentValues();
-                values.put(KEY_CLASS_NUMBER, courseSchedule.getClassNumber());
-                values.put(KEY_SUBJECT, courseSchedule.getSubject());
-                values.put(KEY_NUMBER, courseSchedule.getCatalogNumber());
-                values.put(KEY_TITLE, courseSchedule.getTitle());
-                values.put(KEY_ENROLLMENT_CAPACITY, courseSchedule.getEnrollmentCapacity());
-                values.put(KEY_ENROLLMENT_TOTAL, courseSchedule.getEnrollmentTotal());
-                values.put(KEY_WAITING_CAPACITY, courseSchedule.getWaitingCapacity());
-                values.put(KEY_WAITING_TOTAL, courseSchedule.getWaitingTotal());
-
-                String[] typeSection = courseSchedule.getSection().split(" ");
-                values.put(KEY_TYPE, typeSection[0]);
-                values.put(KEY_SECTION_NUMBER, typeSection[1]);
-
-                // Date
-                List<ScheduledClass> scheduledClasses = courseSchedule.getScheduledClasses();
-                for (ScheduledClass sClass: scheduledClasses) {
-                    ScheduledClass.Date d = sClass.getDate();
-                    if (d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) continue;
-
-                    String str = d.getWeekdays() == null ? "" : d.getWeekdays();
-                    Set<String> componentDays = tokenizeDays(str);
-                    for (String weekday: componentDays) {
-                        values.put(KEY_START_TIME, d.getStartTime());
-                        values.put(KEY_END_TIME, d.getEndTime());
-                        values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
-                        values.put(KEY_IS_CLOSED, d.getIsClosed() ? 1 : 0);
-                        values.put(KEY_IS_TBA, d.getIsTba() ? 1 : 0);
-                        values.put(KEY_DAY, weekday);
-                        values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
-                        values.put(KEY_ROOM, sClass.getLocation().getRoom());
-                        values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
-                        db.insert(TABLE_SCHEDULES, null, values);
-                    }
-                }
-            }
-
-            this.callback.onFinishTransaction(this.dbHandler);
-        }
-    }
-
     // Helper
     private static String ListToSerializableString(List<String> in) {
         StringBuilder sb = new StringBuilder();
@@ -202,15 +141,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public void addCourses(List<Course> courses, DBHandlerCallback callback) {
         Thread t = new Thread(new AddCourseHelper(courses, this, callback));
-        try {
-            t.start();
-        } catch (Exception e) {
-            callback.onTransactionFailed(e);
-        }
-    }
-
-    public void addSchedules(List<CourseSchedule> schedules, DBHandlerCallback callback) {
-        Thread t = new Thread(new AddScheduleHelper(schedules, this, callback));
         try {
             t.start();
         } catch (Exception e) {
@@ -367,114 +297,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
-    private CourseComponent makeCourseComponent(Cursor cursor) {
-        CourseComponent courseComponent = new CourseComponent();
-        courseComponent.setClassNumber(cursor.getInt(1));
-        courseComponent.setSubject(cursor.getString(2));
-        courseComponent.setCatalogNumber(cursor.getString(3));
-        courseComponent.setTitle(cursor.getString(4));
-        courseComponent.setEnrollmentCapacity(cursor.getInt(5));
-        courseComponent.setEnrollmentTotal(cursor.getInt(6));
-        courseComponent.setWaitingCapacity(cursor.getInt(7));
-        courseComponent.setWaitingTotal(cursor.getInt(8));
-        courseComponent.setType(cursor.getString(9));
-        courseComponent.setSection(cursor.getString(10));
-        courseComponent.setStartTime(cursor.getString(11));
-        courseComponent.setEndTime(cursor.getString(12));
-        courseComponent.setIsCancelled(cursor.getInt(13) == 1);
-        courseComponent.setIsClosed(cursor.getInt(14) == 1);
-        courseComponent.setIsTba(cursor.getInt(15) == 1);
-        courseComponent.setDay(cursor.getString(16));
-        Location loc = new Location();
-        loc.setBuilding(cursor.getString(17));
-        loc.setRoom(cursor.getString(18));
-        courseComponent.setLocation(loc);
-        courseComponent.setInstructors(SerializableStringToArray(cursor.getString(19)));
-        return courseComponent;
-    }
-
-    public static List<CourseComponent> makeCourseComponents(CourseSchedule course) {
-        List<CourseComponent> result = new ArrayList<>();
-        List<ScheduledClass> scheduledClasses = course.getScheduledClasses();
-
-        // Iterate through "classes" (e.g. TUT, LEC, LAB)
-        for (ScheduledClass sClass: scheduledClasses) {
-            ScheduledClass.Date d = sClass.getDate();
-
-            if (d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) continue;
-            String str = d.getWeekdays() == null ? "" : d.getWeekdays();
-            Set<String> componentDays = tokenizeDays(str);
-
-            // Create a component for each day this class exists
-            for (String weekday: componentDays) {
-                CourseComponent courseComponent = new CourseComponent();
-                courseComponent.setClassNumber(course.getClassNumber());
-                courseComponent.setSubject(course.getSubject());
-                courseComponent.setCatalogNumber(course.getCatalogNumber());
-                courseComponent.setTitle(course.getTitle());
-                courseComponent.setEnrollmentCapacity(course.getEnrollmentCapacity());
-                courseComponent.setEnrollmentTotal(course.getEnrollmentTotal());
-                courseComponent.setWaitingCapacity(course.getWaitingCapacity());
-                courseComponent.setWaitingTotal(course.getWaitingTotal());
-
-                String[] typeSection = course.getSection().split(" ");
-                courseComponent.setType(typeSection[0]);
-                courseComponent.setSection(typeSection[1]);
-
-                courseComponent.setStartTime(d.getStartTime());
-                courseComponent.setEndTime(d.getEndTime());
-                courseComponent.setIsCancelled(d.getIsCancelled());
-                courseComponent.setIsClosed(d.getIsClosed());
-                courseComponent.setIsTba(d.getIsTba());
-                courseComponent.setLocation(sClass.getLocation());
-                courseComponent.setInstructors(
-                        SerializableStringToArray(sClass.getInstructors().toString()));
-                courseComponent.setDay(weekday);
-                result.add(courseComponent);
-            }
-        }
-
-        return result;
-    }
-
-    public List<CourseComponent> getAllCourseSchedules() {
-        List<CourseComponent> ret = new ArrayList<>();
-
-        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES;
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                CourseComponent courseComponent = makeCourseComponent(cursor);
-                ret.add(courseComponent);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return ret;
-    }
-
-    public List<CourseComponent> getCourseSchedule(String subject, String catalogNumber) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        List<CourseComponent> ret = new ArrayList<>();
-
-        String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SUBJECT + "=\"" + subject
-                + "\" AND " + KEY_NUMBER + "=\"" + catalogNumber + "\"";
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        if (cursor.moveToFirst()) {
-            do {
-                CourseComponent courseComponent = makeCourseComponent(cursor);
-                ret.add(courseComponent);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-
-        return ret;
-    }
-
     public Course getCourseByCourseCode(String subject, String catalogNumber) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(
@@ -536,19 +358,4 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return count;
     }
 
-
-    // string is in format TTh, MF, etc.
-    private static Set<String> tokenizeDays (String str) {
-        Set<String> days = new HashSet<String>();
-        if (str.length() == 0) {
-            return days;
-        }
-        for (String day : WEEKDAYS) {
-            if (str.contains(day)) {
-                days.add(day);
-            }
-            str = str.replaceFirst(day, "");
-        }
-        return days;
-    }
 }
