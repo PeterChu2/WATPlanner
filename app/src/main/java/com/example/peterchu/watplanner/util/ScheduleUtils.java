@@ -39,16 +39,16 @@ public class ScheduleUtils {
     public static List<WeekViewEvent> toWeekViewEvents(
             CourseScheduleComponent component, int month) {
         // TODO: hack for current term - should update with term month data at some point
-        Calendar date = Calendar.getInstance();
-        date.set(Calendar.MONTH, month);
-        date.set(Calendar.YEAR, 2017);
-        date.set(Calendar.DAY_OF_MONTH, 1);
         if ((month < Calendar.MAY) || (month > Calendar.AUGUST)) {
             return new ArrayList<>();
         }
 
         List<WeekViewEvent> weekViewEvents = new ArrayList<>();
         for (ScheduledClass scheduledClass : component.getScheduledClasses()) {
+            Calendar date = Calendar.getInstance();
+            date.set(Calendar.MONTH, month);
+            date.set(Calendar.YEAR, 2017);
+            date.set(Calendar.DAY_OF_MONTH, 1);
             try {
                 Date eventStartTime = DATE_FORMAT.parse(scheduledClass.getDate().getStartTime());
                 Date eventEndTime = DATE_FORMAT.parse(scheduledClass.getDate().getEndTime());
