@@ -16,6 +16,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.alamkanak.weekview.MonthLoader;
+import com.alamkanak.weekview.WeekView;
+import com.alamkanak.weekview.WeekViewEvent;
 import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
@@ -26,6 +29,7 @@ import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +42,9 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     HomePresenter homePresenter;
     CourseListAdapter courseAdapter;
     MaterialSearchView searchView;
+    WeekView weekView;
+    List<CourseComponent> mCourseSchedule;
+
 
     @Override
     public void setPresenter(HomePresenter presenter) {
@@ -75,6 +82,8 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
                 openDetailView(c.getId());
             }
         });
+
+        weekView = (WeekView) root.findViewById(R.id.weekViewHome);
 
         searchView = (MaterialSearchView) getActivity()
                 .findViewById(R.id.search_view);
@@ -162,6 +171,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     public void removeCourse(Course course) {
         courseAdapter.remove(course);
         courseAdapter.notifyDataSetChanged();
+        weekView.notifyDatasetChanged();
         Snackbar.make(getActivity().findViewById(R.id.container), "Course removed", Snackbar.LENGTH_SHORT).show();
     }
 
@@ -183,6 +193,26 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         intent.putExtra(CourseDetailFragment.ARG_COURSE_ID, courseId);
         context.startActivity(intent);
         return true;
+    }
+
+    public void setCourseSchedule(List<CourseComponent> courseSchedule) {
+        mCourseSchedule = courseSchedule;
+        // The week view has infinite scrolling horizontally. We have to provide the events of a
+        // month every time the month changes on the week view.
+        weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
+            @Override
+            public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+                List<WeekViewEvent> events = new ArrayList<>();
+                for (CourseComponent c : mCourseSchedule) {
+                    events.addAll(c.toWeekViewEvents(newMonth));
+                }
+                return events;
+            }
+        });
+        weekView.setMinimumHeight(1200);
+        weekView.setFirstDayOfWeek(Calendar.MONDAY);
+        weekView.setShowNowLine(false);
+        weekView.goToHour(8);
     }
 
     public void emptyCourseList() {
