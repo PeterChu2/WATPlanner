@@ -8,6 +8,7 @@ import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.R;
+import com.example.peterchu.watplanner.data.DataRepository;
 
 /**
  * An activity representing a single Course detail screen.
@@ -27,9 +28,7 @@ public class CourseDetailActivity extends AppCompatActivity {
 
         new CourseDetailPresenter(courseDetailFragment,
                 getIntent().getIntExtra(CourseDetailFragment.ARG_COURSE_ID, -1),
-                ApiClient.getClient().create(ApiInterface.class),
-                DatabaseHandler.getInstance(this),
-                PreferenceManager.getDefaultSharedPreferences(this));
+                DataRepository.getDataRepository(this));
 
         getSupportFragmentManager()
                 .beginTransaction()

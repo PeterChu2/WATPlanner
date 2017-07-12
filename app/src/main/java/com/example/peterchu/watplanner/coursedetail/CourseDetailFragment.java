@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
+import com.alamkanak.weekview.WeekViewLoader;
 import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
@@ -43,6 +44,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
     private CourseDetailPresenter presenter;
 
     private View rootView;
+    private WeekView weekView;
     private FloatingActionButton fab;
 
     private boolean isFabRotated = false;
@@ -57,6 +59,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
                              ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.course_detail_fragment, container, false);
+        weekView = (WeekView) rootView.findViewById(R.id.weekView);
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.detail_toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -68,14 +71,34 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
                 presenter.onFabClicked();
             }
         });
+
         return rootView;
     }
 
     public void setCourseDetails(CourseDetails courseDetails) {
         ((TextView) rootView.findViewById(R.id.course_title)).setText(courseDetails.getTitle());
+        ((TextView) rootView.findViewById(R.id.course_description)).setText(
+                courseDetails.getDescription());
+        ((TextView) rootView.findViewById(R.id.course_prerequisites)).setText(
+                courseDetails.getPrerequisites());
+        ((TextView) rootView.findViewById(R.id.course_antirequisites)).setText(
+                courseDetails.getAntirequisites());
+    }
 
-        // Get a reference for the week view in the layout.
-        WeekView weekView = (WeekView) rootView.findViewById(R.id.weekView);
+    public void setCourseSchedule(List<CourseComponent> courseSchedule) {
+        mCourseSchedule = courseSchedule;
+        // The week view has infinite scrolling horizontally. We have to provide the events of a
+        // month every time the month changes on the week view.
+        weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
+            @Override
+            public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+                List<WeekViewEvent> events = new ArrayList<>();
+                for (CourseComponent c : mCourseSchedule) {
+                    events.addAll(c.toWeekViewEvents(newMonth));
+                }
+                return events;
+            }
+        });
 
         // Set an action when any event is clicked.
         weekView.setOnEventClickListener(new WeekView.EventClickListener() {
@@ -90,34 +113,10 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
                 d.show();
             }
         });
-
-        // The week view has infinite scrolling horizontally. We have to provide the events of a
-        // month every time the month changes on the week view.
-        weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
-            @Override
-            public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-                List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
-                for (CourseComponent c : mCourseSchedule) {
-                    events.addAll(c.toWeekViewEvents(newMonth));
-                }
-                return events;
-            }
-        });
         weekView.setMinimumHeight(1200);
         weekView.setFirstDayOfWeek(Calendar.MONDAY);
         weekView.setShowNowLine(false);
         weekView.goToHour(8);
-
-        ((TextView) rootView.findViewById(R.id.course_description)).setText(
-                courseDetails.getDescription());
-        ((TextView) rootView.findViewById(R.id.course_prerequisites)).setText(
-                courseDetails.getPrerequisites());
-        ((TextView) rootView.findViewById(R.id.course_antirequisites)).setText(
-                courseDetails.getAntirequisites());
-    }
-
-    public void setCourseSchedule(List<CourseComponent> courseSchedule) {
-        mCourseSchedule = courseSchedule;
     }
 
     @Override

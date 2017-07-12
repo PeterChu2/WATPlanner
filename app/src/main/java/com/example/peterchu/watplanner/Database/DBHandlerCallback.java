@@ -6,4 +6,5 @@ package com.example.peterchu.watplanner.Database;
 
 public interface DBHandlerCallback {
     void onFinishTransaction(DatabaseHandler dbHandler);
+    void onTransactionFailed(Exception e);
 }
