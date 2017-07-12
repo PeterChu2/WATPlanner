@@ -1,11 +1,23 @@
 package com.example.peterchu.watplanner.home;
 
+import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.CalendarContract;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
@@ -67,5 +79,63 @@ class HomePresenter implements BasePresenter {
     public boolean onSubmitSearchQuery(String subject, String catalogNumber) {
         Course c = dataRepository.getCourse(subject, catalogNumber);
         return homeFragment.openDetailView(c == null ? null : c.getId());
+    }
+
+    public void onExportCoursesToCalendar(List<CourseComponent> courseSchedule) {
+        for (CourseComponent courseComponent : courseSchedule) {
+            long calID = getDefaultCalendarID(this.homeFragment.getActivity());
+            Calendar beginTime = Calendar.getInstance();
+            beginTime.set(2016, 0, 19, 7, 30);
+            long startMillis = beginTime.getTimeInMillis();
+            Calendar endTime = Calendar.getInstance();
+            endTime.set(2016, 0, 19, 8, 30);
+            long endMillis = endTime.getTimeInMillis();
+
+            ContentResolver cr = this.homeFragment.getActivity().getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(CalendarContract.Events.DTSTART, startMillis);
+            values.put(CalendarContract.Events.DTEND, endMillis);
+            values.put(CalendarContract.Events.TITLE, String.format("%s %d",
+                    courseComponent.getSubject(), courseComponent.getCatalogNumber()));
+            values.put(CalendarContract.Events.DESCRIPTION, courseComponent.getTitle());
+            values.put(CalendarContract.Events.CALENDAR_ID, calID);
+            values.put(CalendarContract.Events.EVENT_TIMEZONE, "America/Los_Angeles");
+
+            boolean canWriteCalendar = ContextCompat.checkSelfPermission(
+                    this.homeFragment.getActivity(),
+                    Manifest.permission.WRITE_CALENDAR
+            ) == PackageManager.PERMISSION_GRANTED;
+
+            if (!canWriteCalendar) {
+                ActivityCompat.requestPermissions(this.homeFragment.getActivity(),
+                        new String[]{Manifest.permission.WRITE_CALENDAR,
+                                Manifest.permission.READ_CALENDAR}, 0);
+            }
+            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+            long eventID = Long.parseLong(uri.getLastPathSegment());
+            System.out.println(eventID);
+        }
+        Toast.makeText(this.homeFragment.getActivity(), "Courses exported!", Toast.LENGTH_SHORT);
+    }
+
+    public long getDefaultCalendarID(Context c) {
+        String projection[] = {"_id", "calendar_displayName"};
+        Uri calendars;
+        calendars = Uri.parse("content://com.android.calendar/calendars");
+
+        ContentResolver contentResolver = c.getContentResolver();
+        Cursor managedCursor = contentResolver.query(calendars, projection, null, null, null);
+
+        if (managedCursor.moveToFirst()) {
+            long calID;
+            int idCol = managedCursor.getColumnIndex(projection[0]);
+            do {
+                calID = managedCursor.getLong(idCol);
+                managedCursor.close();
+                return calID;
+            } while (managedCursor.moveToNext());
+        }
+        managedCursor.close();
+        return 1;
     }
 }

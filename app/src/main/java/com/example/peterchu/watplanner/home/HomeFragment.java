@@ -1,12 +1,14 @@
 package com.example.peterchu.watplanner.home;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Models.Course.Course;
+import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
@@ -115,7 +118,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // todo: pchu with dat magic
+                showExportCalendarDialog();
             }
         });
 
@@ -126,6 +129,27 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     public void onStart() {
         super.onStart();
         homePresenter.start();
+    }
+
+    public void showExportCalendarDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Export added courses to your schedule.");
+
+        builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                homePresenter.onExportCoursesToCalendar(new ArrayList<CourseComponent>());
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     public void addCourses(List<Course> courses) {
