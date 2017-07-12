@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import android.app.Dialog;
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -31,6 +32,7 @@ import com.example.peterchu.watplanner.util.ScheduleUtils;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 
 /**
  * A fragment representing a single Course detail screen.
@@ -92,8 +94,15 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
             @Override
             public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
                 List<WeekViewEvent> events = new ArrayList<>();
+
+                // Color each section and type a different color and add to view
+                Random rnd = new Random();
                 for (CourseScheduleComponent c : mCourseSchedule) {
-                    events.addAll(ScheduleUtils.toWeekViewEvents(c, newMonth));
+                    int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+                    for (WeekViewEvent event : ScheduleUtils.toWeekViewEvents(c, newMonth)) {
+                        event.setColor(color);
+                        events.add(event);
+                    }
                 }
                 return events;
             }
