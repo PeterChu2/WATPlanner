@@ -1,6 +1,5 @@
 package com.example.peterchu.watplanner.Models.Schedule;
 
-import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -13,13 +12,13 @@ import java.util.List;
 public class CourseScheduleResponse {
     @SerializedName("data")
     @Expose
-    private List<CourseSchedule> data;
+    private List<CourseScheduleComponent> data;
 
-    public List<CourseSchedule> getData() {
+    public List<CourseScheduleComponent> getData() {
         return data;
     }
 
-    public void setData(List<CourseSchedule> data) {
+    public void setData(List<CourseScheduleComponent> data) {
         this.data = data;
     }
 

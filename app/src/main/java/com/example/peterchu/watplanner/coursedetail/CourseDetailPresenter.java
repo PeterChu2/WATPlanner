@@ -1,17 +1,13 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import com.example.peterchu.watplanner.BasePresenter;
-import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
-import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
-import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
+import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 class CourseDetailPresenter implements BasePresenter {
 
@@ -54,12 +50,9 @@ class CourseDetailPresenter implements BasePresenter {
                     course,
                     new DataRepository.CourseScheduleCallback() {
                         @Override
-                        public void onCourseScheduleRetrieved(List<CourseSchedule> schedules) {
-                            List<CourseComponent> result = new ArrayList<>();
-                            for (CourseSchedule s : schedules) {
-                                result.addAll(DatabaseHandler.makeCourseComponents(s));
-                            }
-                            courseDetailFragment.setCourseSchedule(result);
+                        public void onCourseScheduleRetrieved(
+                                List<CourseScheduleComponent> schedules) {
+                            courseDetailFragment.setCourseSchedule(schedules);
                         }
 
                         @Override

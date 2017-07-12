@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import android.app.Dialog;
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -10,7 +11,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -22,16 +22,17 @@ import android.widget.TextView;
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
-import com.alamkanak.weekview.WeekViewLoader;
 import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
-import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
+import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleComponent;
 import com.example.peterchu.watplanner.R;
+import com.example.peterchu.watplanner.util.ScheduleUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 
 /**
  * A fragment representing a single Course detail screen.
@@ -40,7 +41,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public static final String ARG_COURSE_ID = "course_id";
 
-    private List<CourseComponent> mCourseSchedule;
+    private List<CourseScheduleComponent> mCourseSchedule;
     private CourseDetailPresenter presenter;
 
     private View rootView;
@@ -85,7 +86,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
                 courseDetails.getAntirequisites());
     }
 
-    public void setCourseSchedule(List<CourseComponent> courseSchedule) {
+    public void setCourseSchedule(List<CourseScheduleComponent> courseSchedule) {
         mCourseSchedule = courseSchedule;
         // The week view has infinite scrolling horizontally. We have to provide the events of a
         // month every time the month changes on the week view.
@@ -93,8 +94,15 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
             @Override
             public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
                 List<WeekViewEvent> events = new ArrayList<>();
-                for (CourseComponent c : mCourseSchedule) {
-                    events.addAll(c.toWeekViewEvents(newMonth));
+
+                // Color each section and type a different color and add to view
+                Random rnd = new Random();
+                for (CourseScheduleComponent c : mCourseSchedule) {
+                    int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+                    for (WeekViewEvent event : ScheduleUtils.toWeekViewEvents(c, newMonth)) {
+                        event.setColor(color);
+                        events.add(event);
+                    }
                 }
                 return events;
             }
@@ -104,10 +112,11 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         weekView.setOnEventClickListener(new WeekView.EventClickListener() {
             @Override
             public void onEventClick(WeekViewEvent event, RectF eventRect) {
-                CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
                 ComponentItemView componentItemView = new ComponentItemView(
-                        CourseDetailFragment.this.getContext(), courseComponent
-                );
+                        CourseDetailFragment.this.getContext(),
+                        ((WeekViewCourseEvent) event).getDay(),
+                        ((WeekViewCourseEvent) event).getCourseComponent(),
+                        ((WeekViewCourseEvent) event).getScheduledClass());
                 final Dialog d = new Dialog(CourseDetailFragment.this.getContext());
                 d.setContentView(componentItemView);
                 d.show();
