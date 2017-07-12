@@ -3,7 +3,6 @@ package com.example.peterchu.watplanner.coursedetail;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
