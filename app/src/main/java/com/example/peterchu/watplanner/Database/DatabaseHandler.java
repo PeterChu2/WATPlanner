@@ -152,26 +152,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                         db.insert(TABLE_SCHEDULES, null, values);
                     }
                 }
-                // Log.d("DATABASE", "Add " + count + " components to class (" + dates.toString() + ") " + courseSchedule.getTitle() + courseSchedule.getCatalogNumber());
-
             }
 
             this.callback.onFinishTransaction(this.dbHandler);
-        }
-
-        // string is in format TTh, MF, etc.
-        private Set<String> tokenizeDays (String str) {
-            Set<String> days = new HashSet<String>();
-            if (str.length() == 0) {
-                return days;
-            }
-            for (String day : WEEKDAYS) {
-                if (str.contains(day)) {
-                    days.add(day);
-                }
-                str = str.replaceFirst(day, "");
-            }
-            return days;
         }
     }
 
@@ -217,23 +200,21 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addCourses(List<Course> courses, DBHandlerCallback callback) throws Exception {
+    public void addCourses(List<Course> courses, DBHandlerCallback callback) {
         Thread t = new Thread(new AddCourseHelper(courses, this, callback));
         try {
             t.start();
         } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+            callback.onTransactionFailed(e);
         }
     }
 
-    public void addSchedules(List<CourseSchedule> schedules, DBHandlerCallback callback) throws Exception {
+    public void addSchedules(List<CourseSchedule> schedules, DBHandlerCallback callback) {
         Thread t = new Thread(new AddScheduleHelper(schedules, this, callback));
         try {
             t.start();
         } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+            callback.onTransactionFailed(e);
         }
     }
 
@@ -387,7 +368,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     private CourseComponent makeCourseComponent(Cursor cursor) {
-
         CourseComponent courseComponent = new CourseComponent();
         courseComponent.setClassNumber(cursor.getInt(1));
         courseComponent.setSubject(cursor.getString(2));
@@ -411,6 +391,50 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         courseComponent.setLocation(loc);
         courseComponent.setInstructors(SerializableStringToArray(cursor.getString(19)));
         return courseComponent;
+    }
+
+    public static List<CourseComponent> makeCourseComponents(CourseSchedule course) {
+        List<CourseComponent> result = new ArrayList<>();
+        List<ScheduledClass> scheduledClasses = course.getScheduledClasses();
+
+        // Iterate through "classes" (e.g. TUT, LEC, LAB)
+        for (ScheduledClass sClass: scheduledClasses) {
+            ScheduledClass.Date d = sClass.getDate();
+
+            if (d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) continue;
+            String str = d.getWeekdays() == null ? "" : d.getWeekdays();
+            Set<String> componentDays = tokenizeDays(str);
+
+            // Create a component for each day this class exists
+            for (String weekday: componentDays) {
+                CourseComponent courseComponent = new CourseComponent();
+                courseComponent.setClassNumber(course.getClassNumber());
+                courseComponent.setSubject(course.getSubject());
+                courseComponent.setCatalogNumber(course.getCatalogNumber());
+                courseComponent.setTitle(course.getTitle());
+                courseComponent.setEnrollmentCapacity(course.getEnrollmentCapacity());
+                courseComponent.setEnrollmentTotal(course.getEnrollmentTotal());
+                courseComponent.setWaitingCapacity(course.getWaitingCapacity());
+                courseComponent.setWaitingTotal(course.getWaitingTotal());
+
+                String[] typeSection = course.getSection().split(" ");
+                courseComponent.setType(typeSection[0]);
+                courseComponent.setSection(typeSection[1]);
+
+                courseComponent.setStartTime(d.getStartTime());
+                courseComponent.setEndTime(d.getEndTime());
+                courseComponent.setIsCancelled(d.getIsCancelled());
+                courseComponent.setIsClosed(d.getIsClosed());
+                courseComponent.setIsTba(d.getIsTba());
+                courseComponent.setLocation(sClass.getLocation());
+                courseComponent.setInstructors(
+                        SerializableStringToArray(sClass.getInstructors().toString()));
+                courseComponent.setDay(weekday);
+                result.add(courseComponent);
+            }
+        }
+
+        return result;
     }
 
     public List<CourseComponent> getAllCourseSchedules() {
@@ -510,5 +534,21 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         int count = cursor.getCount();
         cursor.close();
         return count;
+    }
+
+
+    // string is in format TTh, MF, etc.
+    private static Set<String> tokenizeDays (String str) {
+        Set<String> days = new HashSet<String>();
+        if (str.length() == 0) {
+            return days;
+        }
+        for (String day : WEEKDAYS) {
+            if (str.contains(day)) {
+                days.add(day);
+            }
+            str = str.replaceFirst(day, "");
+        }
+        return days;
     }
 }

@@ -11,6 +11,7 @@ import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.R;
+import com.example.peterchu.watplanner.data.DataRepository;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 public class HomeActivity extends AppCompatActivity {
@@ -34,12 +35,7 @@ public class HomeActivity extends AppCompatActivity {
                 .add(R.id.container, homeFragment)
                 .commit();
 
-        homePresenter = new HomePresenter(
-                homeFragment,
-                ApiClient.getClient().create(ApiInterface.class),
-                DatabaseHandler.getInstance(this),
-                PreferenceManager.getDefaultSharedPreferences(HomeActivity.this)
-                );
+        homePresenter = new HomePresenter(homeFragment, DataRepository.getDataRepository(this));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

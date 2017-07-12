@@ -15,20 +15,14 @@ import retrofit2.http.Query;
 
 public interface ApiInterface {
     @GET("terms/{termId}/courses.json")
-    Call<CourseResponse> getCourses(@Path("termId") String termId, @Query("key") String apiKey);
-
-    @GET("terms/{termId}/{subject}/{catalogNumber}/schedule.json")
-    Call<CourseScheduleResponse> getCourseSchedule(
+    Call<CourseResponse> getCourses(
             @Path("termId") String termId,
+            @Query("key") String apiKey);
+
+    @GET("courses/{subject}/{catalogNumber}/schedule.json")
+    Call<CourseScheduleResponse> getCourseSchedule(
             @Path("subject") String subject,
             @Path("catalogNumber") String catalogNumber,
-            @Query("key") String apiKey
-    );
-
-    @GET("terms/{termId}/{subject}/schedule.json")
-    Call<CourseScheduleResponse> getSubjectCourseSchedules(
-            @Path("termId") String termId,
-            @Path("subject") String subject,
             @Query("key") String apiKey
     );
 
@@ -38,5 +32,4 @@ public interface ApiInterface {
             @Path("catalogNumber") String catalogNumber,
             @Query("key") String apiKey
     );
-
 }
