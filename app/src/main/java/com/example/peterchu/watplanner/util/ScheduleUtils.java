@@ -74,8 +74,10 @@ public class ScheduleUtils {
 
                         event.setStartTime(startTime);
                         event.setEndTime(endTime);
-                        event.setLocation(scheduledClass.getLocation().toString());
-                        event.setName(component.getSection());
+                        event.setLocation(component.getSection().substring(0, 4));
+                        event.setName(String.format("%s %s",
+                                component.getSubject(),
+                                component.getCatalogNumber()));
                         weekViewEvents.add(event);
                     }
                     date.add(Calendar.DATE, 1);
