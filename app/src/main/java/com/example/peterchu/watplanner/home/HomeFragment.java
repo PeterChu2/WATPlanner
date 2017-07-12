@@ -1,26 +1,16 @@
 package com.example.peterchu.watplanner.home;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.PopupMenu;
-import android.text.InputType;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -125,7 +115,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            showAddCourseDialog();
+                // todo: pchu with dat magic
             }
         });
 
@@ -136,41 +126,6 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     public void onStart() {
         super.onStart();
         homePresenter.start();
-    }
-
-    // TODO: Move adding courses to a new screen
-    public void showAddCourseDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Add a course to your schedule");
-
-        final EditText inputEditText = new EditText(getContext());
-        inputEditText.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(inputEditText);
-
-        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String input = inputEditText.getText().toString();
-                Matcher matcher = courseCodePattern.matcher(input);
-                if (!matcher.find()) {
-                    Toast.makeText(getContext(), "Invalid course code!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                String subject = matcher.group(1);
-                String catalogNumber = matcher.group(2);
-                homePresenter.onCourseAdd(subject, catalogNumber);
-            }
-        });
-
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
     }
 
     public void addCourses(List<Course> courses) {
