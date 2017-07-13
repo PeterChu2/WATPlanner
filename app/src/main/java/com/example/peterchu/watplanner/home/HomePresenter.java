@@ -11,14 +11,17 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
+import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
 import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +48,20 @@ class HomePresenter implements BasePresenter {
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
             @Override
             public void onDataSynced() {
-                configureSchedule(getSavedCourses());
+                // Load user's saved courses into the list
+                final Set<String> savedCourses = dataRepository.getUserCourses();
+                if (!savedCourses.isEmpty()) {
+                    List<Course> courses = dataRepository.getCourses(
+                            savedCourses.toArray(new String[savedCourses.size()]));
+                    homeFragment.emptyCourseList();
+                    homeFragment.addCourses(courses);
+                    CourseScheduler scheduler = new CourseScheduler(dataRepository);
+                    try {
+                        scheduler.generateSchedules();
+                    } catch (ParseException e) {
+                        Log.e("HomePresenter", "Could not generate conflict-free schedules:" + e);
+                    }
+                }
             }
 
             @Override
