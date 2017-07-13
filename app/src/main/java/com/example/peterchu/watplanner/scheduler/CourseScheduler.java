@@ -8,6 +8,10 @@ import com.example.peterchu.watplanner.data.DataRepository;
 
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
+import org.chocosolver.solver.constraints.LogicalConstraintFactory;
+import org.chocosolver.solver.constraints.SatFactory;
+import org.chocosolver.solver.constraints.nary.cnf.ILogical;
+import org.chocosolver.solver.constraints.nary.cnf.LogOp;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
@@ -62,12 +66,15 @@ public class CourseScheduler {
                 List<List<BoolVar>> lecturesBySection = getBoolListsBySection(lectures);
                 for (int i = 0; i < lecturesBySection.size() - 1; i++) {
                     List<BoolVar> sectionA = lecturesBySection.get(i);
-                    Constraint left = and(sectionA.toArray(new BoolVar[sectionA.size()]));
-                    solver.post(left);
+                    BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
+                    Constraint left = and(a);
+                    Constraint negLeft = not(or(a));
                     for (int j = i + 1; j < lecturesBySection.size(); j++) {
                         List<BoolVar> sectionB = lecturesBySection.get(j);
-                        Constraint right = and(sectionB.toArray(new BoolVar[sectionB.size()]));
-                        solver.post(and(or(left, right), not(and(left, right)))); // XOR
+                        BoolVar[] b = sectionB.toArray(new BoolVar[sectionB.size()]);
+                        Constraint right = and(b);
+                        Constraint negRight = not(or(b));
+                        solver.post(or(and(left, negRight), and(right, negLeft)));
                     }
                 }
 
@@ -120,13 +127,9 @@ public class CourseScheduler {
         Date startB = componentDateFormat.parse(classB.getStartTime());
         Date endB = componentDateFormat.parse(classB.getEndTime());
 
-        if (startA.getTime() > endB.getTime()
+        return !(startA.getTime() > endB.getTime()
                 || endA.getTime() < startB.getTime()
-                || !classA.getDay().equals(classB.getDay())) {
-            return false;
-        } else {
-            return true;
-        }
+                || !classA.getDay().equals(classB.getDay()));
     }
 
     private List<List<BoolVar>> getBoolListsBySection(List<CourseComponent> components) {
