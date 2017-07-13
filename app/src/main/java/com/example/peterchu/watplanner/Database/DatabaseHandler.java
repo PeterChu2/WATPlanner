@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
@@ -22,6 +23,7 @@ import java.util.Set;
  */
 
 public class DatabaseHandler extends SQLiteOpenHelper {
+
     private static final String SERIALIZE_SEPARATOR = "_@@_";
     private static final String[] WEEKDAYS = {"M", "Th", "W", "T", "F"}; // Th must come before T.
 
@@ -55,6 +57,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_DAY = "day";
     private static final String KEY_BUIDING = "building";
     private static final String KEY_ROOM = "room";
+    private static final String KEY_COURSE_ID= "courseId";
     private static final String KEY_START_DATE = "startDate";
     private static final String KEY_END_DATE = "endDate";
     private static final String KEY_INSTRUCTORS = "instructors";
@@ -103,13 +106,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     private class AddScheduleHelper implements Runnable {
         private List<CourseSchedule> schedules;
-        DatabaseHandler dbHandler;
-        DBHandlerCallback callback;
+        private DatabaseHandler dbHandler;
+        private DBHandlerCallback callback;
+        private Course course;
 
-        public AddScheduleHelper(List<CourseSchedule> schedules, DatabaseHandler dbHandler, DBHandlerCallback callback) {
+        public AddScheduleHelper(Course course, List<CourseSchedule> schedules, DatabaseHandler dbHandler, DBHandlerCallback callback) {
             this.schedules = schedules;
             this.dbHandler = dbHandler;
             this.callback = callback;
+            this.course = course;
         }
 
         @Override
@@ -126,6 +131,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 values.put(KEY_ENROLLMENT_TOTAL, courseSchedule.getEnrollmentTotal());
                 values.put(KEY_WAITING_CAPACITY, courseSchedule.getWaitingCapacity());
                 values.put(KEY_WAITING_TOTAL, courseSchedule.getWaitingTotal());
+                values.put(KEY_COURSE_ID, course.getId());
 
                 String[] typeSection = courseSchedule.getSection().split(" ");
                 values.put(KEY_TYPE, typeSection[0]);
@@ -149,6 +155,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                         values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
                         values.put(KEY_ROOM, sClass.getLocation().getRoom());
                         values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
+                        Log.d("DBHandler", "Adding Schedules for " + courseSchedule.getSubject() + courseSchedule.getCatalogNumber() + " - " + weekday);
                         db.insert(TABLE_SCHEDULES, null, values);
                     }
                 }
@@ -188,7 +195,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_TYPE + " TEXT," + KEY_SECTION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
                 + KEY_END_TIME + " TEXT," + KEY_IS_CANCELLED + " INTEGER," + KEY_IS_CLOSED + " INTEGER,"
                 + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT,"
-                + KEY_BUIDING + " TEXT," + KEY_ROOM+ " TEXT," + KEY_INSTRUCTORS+ " TEXT" + ")";
+                + KEY_BUIDING + " TEXT," + KEY_ROOM+ " TEXT," + KEY_INSTRUCTORS+ " TEXT,"
+                + KEY_COURSE_ID + " INTEGER," +
+                " FOREIGN KEY ("+KEY_COURSE_ID+") REFERENCES "+TABLE_COURSES+"("+KEY_ID+"))";
 
         db.execSQL(CREATE_SCHEDULES_TABLE);
     }
@@ -209,8 +218,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
-    public void addSchedules(List<CourseSchedule> schedules, DBHandlerCallback callback) {
-        Thread t = new Thread(new AddScheduleHelper(schedules, this, callback));
+    public void addSchedules(Course course, List<CourseSchedule> schedules, DBHandlerCallback callback) {
+        Thread t = new Thread(new AddScheduleHelper(course, schedules, this, callback));
         try {
             t.start();
         } catch (Exception e) {
@@ -291,6 +300,25 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
         cursor.close();
+        return ret;
+    }
+
+    public List<CourseComponent> getCourseComponents(int courseId, String type) {
+        List<CourseComponent> ret = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_COURSE_ID + "=" + courseId + " AND " + KEY_TYPE + "='" + type + "'";
+        Cursor cursor = db.rawQuery(query, null);
+        Log.d("GET_LECTURES", "GETTING LECTURES");
+
+        if (cursor.moveToFirst()) {
+            do {
+                CourseComponent courseComponent = makeCourseComponent(cursor);
+                ret.add(courseComponent);
+                Log.d("    GET_LECTURES", courseComponent.toString());
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
         return ret;
     }
 
@@ -465,6 +493,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor.moveToFirst()) {
+            Log.d("DBHandler", "Making schedules list...");
             do {
                 CourseComponent courseComponent = makeCourseComponent(cursor);
                 ret.add(courseComponent);
@@ -502,13 +531,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteCourse(Course Course) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_COURSES, KEY_ID + " = ?", new String[] { String.valueOf(Course.getId()) });
-    }
-
-    public void deleteAllCoures() {
-        // Armaggedon
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COURSES);
-        onCreate(db);
     }
 
     public void destroyAndRecreateDb() {

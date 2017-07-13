@@ -1,12 +1,8 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
-import com.example.peterchu.watplanner.Database.DatabaseHandler;
-import com.example.peterchu.watplanner.Networking.ApiClient;
-import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 
@@ -28,7 +24,8 @@ public class CourseDetailActivity extends AppCompatActivity {
 
         new CourseDetailPresenter(courseDetailFragment,
                 getIntent().getIntExtra(CourseDetailFragment.ARG_COURSE_ID, -1),
-                DataRepository.getDataRepository(this));
+                DataRepository.getDataRepository(this),
+                this);
 
         getSupportFragmentManager()
                 .beginTransaction()
