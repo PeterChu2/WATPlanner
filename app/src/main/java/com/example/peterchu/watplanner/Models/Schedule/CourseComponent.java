@@ -5,6 +5,7 @@ import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Shared.Location;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -56,9 +57,9 @@ public class CourseComponent {
 
     private String[] instructors;
 
-    public String getType() {
-        return type;
-    }
+    private String term;
+
+    public String getType() { return type; }
 
     public void setType(String type) {
         this.type = type;
@@ -164,8 +165,14 @@ public class CourseComponent {
         return day;
     }
 
+    public String getTerm() { return term; }
+
     public void setDay(String day) {
         this.day = day;
+    }
+
+    public void setTerm(String day) {
+        this.term = term;
     }
 
     public Boolean getIsTba() {
@@ -212,11 +219,43 @@ public class CourseComponent {
         return String.format("%s %s - %s %s - %s %s~%s", subject, catalogNumber, type, section, day, startTime, endTime);
     }
 
+    private Calendar getTermStartDate() {
+        // Currently just returns the term start date for the summer term, but should lookup
+        // the term start date - TODO: need to add API to lookup term information
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MONTH, Calendar.MAY);
+        cal.set(Calendar.YEAR, 2017);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        return cal;
+    }
+
+    public Calendar getCalendarStartTime() {
+        try {
+            Calendar cal = this.getTermStartDate();
+            Date date = componentDateFormat.parse(this.startTime);
+            cal.setTime(date);
+            return cal;
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    public Calendar getCalendarEndTime() {
+        try {
+            Calendar cal = this.getTermStartDate();
+            Date date = componentDateFormat.parse(this.endTime);
+            cal.setTime(date);
+            return cal;
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public List<WeekViewEvent> toWeekViewEvents(int month) {
         List<WeekViewEvent> weekViewEvents = new ArrayList<WeekViewEvent>();
         try {
-            Date eventStartTime = componentDateFormat.parse(this.startTime);
-            Date eventEndTime = componentDateFormat.parse(this.endTime);
+            Calendar eventStartDate = this.getCalendarStartTime();
+            Calendar eventEndDate = this.getCalendarEndTime();
             String eventName = String.format("%s %s %s", subject, catalogNumber, type);
 
             Calendar date = Calendar.getInstance();
@@ -232,17 +271,16 @@ public class CourseComponent {
             while (date.get(Calendar.MONTH) == month) {
                 if (Integer.valueOf(date.get(Calendar.DAY_OF_WEEK)) == this.getDayOfWeek()) {
                     WeekViewCourseEvent event = new WeekViewCourseEvent(this);
-                    Calendar startTime = getCalendarDate(eventStartTime, date);
-                    Calendar endTime = getCalendarDate(eventEndTime, date);
 
-                    endTime.set(Calendar.YEAR, date.get(Calendar.YEAR));
-                    endTime.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
-                    endTime.set(Calendar.MONTH, date.get(Calendar.MONTH));
-                    endTime.set(Calendar.HOUR_OF_DAY, eventEndTime.getHours());
-                    endTime.set(Calendar.MINUTE, eventEndTime.getMinutes());
+                    eventStartDate.set(Calendar.YEAR, date.get(Calendar.YEAR));
+                    eventStartDate.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
+                    eventStartDate.set(Calendar.MONTH, date.get(Calendar.MONTH));
+                    eventEndDate.set(Calendar.YEAR, date.get(Calendar.YEAR));
+                    eventEndDate.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
+                    eventEndDate.set(Calendar.MONTH, date.get(Calendar.MONTH));
 
-                    event.setStartTime(startTime);
-                    event.setEndTime(endTime);
+                    event.setStartTime(eventStartDate);
+                    event.setEndTime(eventEndDate);
                     event.setLocation(location.toString());
                     event.setName(eventName);
                     weekViewEvents.add(event);
@@ -278,13 +316,8 @@ public class CourseComponent {
         }
     }
 
-    private Calendar getCalendarDate(Date eventTime, Calendar eventDate) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, eventDate.get(Calendar.YEAR));
-        cal.set(Calendar.DAY_OF_MONTH, eventDate.get(Calendar.DAY_OF_MONTH));
-        cal.set(Calendar.MONTH, eventDate.get(Calendar.MONTH));
-        cal.set(Calendar.HOUR_OF_DAY, eventTime.getHours());
-        cal.set(Calendar.MINUTE, eventTime.getMinutes());
-        return cal;
+    public String getTermEndDate() {
+        // TODO: need to actually fetch term info later
+        return "20170725";
     }
 }
