@@ -98,8 +98,8 @@ class HomePresenter implements BasePresenter {
             values.put(CalendarContract.Events.DESCRIPTION, courseComponent.getTitle());
             values.put(CalendarContract.Events.CALENDAR_ID, calID);
             values.put(CalendarContract.Events.EVENT_TIMEZONE, "America/Los_Angeles");
-            values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY");
-
+            values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY;UNTIL=" + courseComponent
+                    .getTermEndDate());
             boolean canWriteCalendar = ContextCompat.checkSelfPermission(
                     this.homeFragment.getActivity(),
                     Manifest.permission.WRITE_CALENDAR

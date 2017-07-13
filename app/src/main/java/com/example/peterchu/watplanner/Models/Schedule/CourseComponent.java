@@ -316,4 +316,8 @@ public class CourseComponent {
         }
     }
 
+    public String getTermEndDate() {
+        // TODO: need to actually fetch term info later
+        return "20170725";
+    }
 }
