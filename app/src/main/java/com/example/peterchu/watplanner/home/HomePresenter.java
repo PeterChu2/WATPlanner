@@ -20,6 +20,7 @@ import com.example.peterchu.watplanner.data.DataRepository;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 class HomePresenter implements BasePresenter {
 
@@ -97,7 +98,7 @@ class HomePresenter implements BasePresenter {
                     courseComponent.getSubject(), courseComponent.getCatalogNumber()));
             values.put(CalendarContract.Events.DESCRIPTION, courseComponent.getTitle());
             values.put(CalendarContract.Events.CALENDAR_ID, calID);
-            values.put(CalendarContract.Events.EVENT_TIMEZONE, "America/Los_Angeles");
+            values.put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
             values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY;UNTIL=" + courseComponent
                     .getTermEndDate());
             boolean canWriteCalendar = ContextCompat.checkSelfPermission(
