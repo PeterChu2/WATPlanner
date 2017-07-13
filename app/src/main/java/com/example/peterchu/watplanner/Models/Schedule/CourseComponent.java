@@ -5,20 +5,18 @@ import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Shared.Location;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by Timothy Tong on 6/16/17.
  */
 
 public class CourseComponent {
-    private static final DateFormat componentDateFormat = new SimpleDateFormat( "HH:mm");
+    private static final DateFormat componentDateFormat = new SimpleDateFormat("HH:mm");
 
     private String subject;
 
@@ -58,7 +56,9 @@ public class CourseComponent {
 
     private String[] instructors;
 
-    public String getType() { return type; }
+    public String getType() {
+        return type;
+    }
 
     public void setType(String type) {
         this.type = type;
@@ -104,9 +104,13 @@ public class CourseComponent {
         this.classNumber = classNumber;
     }
 
-    public String getSection() { return section; }
+    public String getSection() {
+        return section;
+    }
 
-    public void setSection(String section) { this.section = section; }
+    public void setSection(String section) {
+        this.section = section;
+    }
 
     public Integer getEnrollmentCapacity() {
         return enrollmentCapacity;

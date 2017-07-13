@@ -1,17 +1,15 @@
 package com.example.peterchu.watplanner.coursedetail;
 
+import android.app.Activity;
+
 import com.example.peterchu.watplanner.BasePresenter;
-import com.example.peterchu.watplanner.Database.DatabaseHandler;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
-import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.data.DataRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 class CourseDetailPresenter implements BasePresenter {
 
@@ -21,13 +19,16 @@ class CourseDetailPresenter implements BasePresenter {
 
     private boolean isFirstLoad = true;
     private boolean isAddedCourse;
+    private Activity activity;
 
     CourseDetailPresenter(CourseDetailFragment courseDetailFragment,
                           int courseId,
-                          DataRepository dataRepository) {
+                          DataRepository dataRepository,
+                          Activity activity) {
         this.courseDetailFragment = courseDetailFragment;
         this.courseId = courseId;
         this.dataRepository = dataRepository;
+        this.activity = activity;
         courseDetailFragment.setPresenter(this);
     }
 
@@ -50,23 +51,21 @@ class CourseDetailPresenter implements BasePresenter {
 
             courseDetailFragment.setTitle(course.getName());
 
-            dataRepository.getCourseSchedule(
+            dataRepository.findOrGetCourseSchedule(
                     course,
                     new DataRepository.CourseScheduleCallback() {
                         @Override
-                        public void onCourseScheduleRetrieved(List<CourseSchedule> schedules) {
-                            List<CourseComponent> result = new ArrayList<>();
-                            for (CourseSchedule s : schedules) {
-                                result.addAll(DatabaseHandler.makeCourseComponents(s));
-                            }
-                            courseDetailFragment.setCourseSchedule(result);
+                        public void onCourseScheduleRetrieved(List<CourseComponent> schedules) {
+                            courseDetailFragment.setCourseSchedule(schedules);
                         }
 
                         @Override
                         public void onFailure() {
 
                         }
-                    });
+                    },
+                    this.activity
+            );
 
 
             dataRepository.getCourseDetails(

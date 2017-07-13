@@ -1,5 +1,6 @@
 package com.example.peterchu.watplanner.data;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -13,7 +14,6 @@ import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Course.CourseDetailsResponse;
 import com.example.peterchu.watplanner.Models.Course.CourseResponse;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
-import com.example.peterchu.watplanner.Models.Schedule.CourseSchedule;
 import com.example.peterchu.watplanner.Models.Schedule.CourseScheduleResponse;
 import com.example.peterchu.watplanner.Networking.ApiClient;
 import com.example.peterchu.watplanner.Networking.ApiInterface;
@@ -125,9 +125,17 @@ public class DataRepository {
     }
 
     /**
-     * Retrieves a course's schedule
+     * Attempts to retrieve a course's schedule from DB, fetches from Waterloo's API if not found, inserting
+     * into DB prior to returning as a list of CourseComponents
      */
-    public void getCourseSchedule(Course course, final CourseScheduleCallback callback) {
+    public void findOrGetCourseSchedule(final Course course, final CourseScheduleCallback callback, final Activity activity) {
+        List<CourseComponent> components = databaseHandler.getCourseSchedule(course.getSubject(), course.getNumber());
+        Log.d("FIND OR GET", ""+components.size());
+        if (components.size() > 0) {
+            callback.onCourseScheduleRetrieved(components);
+            return;
+        }
+        Log.d("DataRepository", String.format("No schedule for %s found, fetching from API", course.toString()));
         apiInterface.getCourseSchedule(
                 course.getSubject(),
                 course.getNumber(),
@@ -136,7 +144,26 @@ public class DataRepository {
                     @Override
                     public void onResponse(Call<CourseScheduleResponse> call,
                                            Response<CourseScheduleResponse> response) {
-                        callback.onCourseScheduleRetrieved(response.body().getData());
+                        DBHandlerCallback addSchedulesCallback = new DBHandlerCallback() {
+                            @Override
+                            public void onFinishTransaction(final DatabaseHandler dbHandler) {
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        List<CourseComponent> components = dbHandler.getCourseSchedule(course.getSubject(), course.getNumber());
+                                        callback.onCourseScheduleRetrieved(components);
+                                        Log.d("FIND OR GET", ""+components.size());
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onTransactionFailed(Exception e) {
+                                Log.e("DataRepository", "Unable to add schedules");
+                            }
+                        };
+                        databaseHandler.addSchedules(course, response.body().getData(), addSchedulesCallback);
+
                     }
 
                     @Override
@@ -145,6 +172,24 @@ public class DataRepository {
                     }
                 });
     }
+
+    public List<CourseComponent> getLectures(int courseId) {
+        return databaseHandler.getCourseComponents(courseId, Constants.LEC);
+    }
+
+    public List<CourseComponent> getSeminars(int courseId) {
+        return databaseHandler.getCourseComponents(courseId, Constants.SEM);
+    }
+
+    public List<CourseComponent> getLabs(int courseId) {
+        return databaseHandler.getCourseComponents(courseId, Constants.LAB);
+    }
+
+    public List<CourseComponent> getTutorials(int courseId) {
+        return databaseHandler.getCourseComponents(courseId, Constants.TUT);
+    }
+
+
 
     /**
      * Fetches in-depth details of a course
@@ -208,7 +253,7 @@ public class DataRepository {
     }
 
     public interface CourseScheduleCallback {
-        void onCourseScheduleRetrieved(List<CourseSchedule> schedules);
+        void onCourseScheduleRetrieved(List<CourseComponent> schedules);
 
         void onFailure();
     }
