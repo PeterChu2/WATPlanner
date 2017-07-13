@@ -254,8 +254,6 @@ public class CourseComponent {
     public List<WeekViewEvent> toWeekViewEvents(int month) {
         List<WeekViewEvent> weekViewEvents = new ArrayList<WeekViewEvent>();
         try {
-            Calendar eventStartDate = this.getCalendarStartTime();
-            Calendar eventEndDate = this.getCalendarEndTime();
             String eventName = String.format("%s %s %s", subject, catalogNumber, type);
 
             Calendar date = Calendar.getInstance();
@@ -269,6 +267,8 @@ public class CourseComponent {
                 return new ArrayList<WeekViewEvent>();
             }
             while (date.get(Calendar.MONTH) == month) {
+                Calendar eventStartDate = this.getCalendarStartTime();
+                Calendar eventEndDate = this.getCalendarEndTime();
                 if (Integer.valueOf(date.get(Calendar.DAY_OF_WEEK)) == this.getDayOfWeek()) {
                     WeekViewCourseEvent event = new WeekViewCourseEvent(this);
 
