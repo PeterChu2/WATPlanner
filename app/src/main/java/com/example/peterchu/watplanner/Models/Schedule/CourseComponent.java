@@ -57,9 +57,9 @@ public class CourseComponent {
 
     private String[] instructors;
 
-    public String getType() {
-        return type;
-    }
+    private String term;
+
+    public String getType() { return type; }
 
     public void setType(String type) {
         this.type = type;
@@ -165,8 +165,14 @@ public class CourseComponent {
         return day;
     }
 
+    public String getTerm() { return term; }
+
     public void setDay(String day) {
         this.day = day;
+    }
+
+    public void setTerm(String day) {
+        this.term = term;
     }
 
     public Boolean getIsTba() {
@@ -213,12 +219,19 @@ public class CourseComponent {
         return String.format("%s %s - %s %s - %s %s~%s", subject, catalogNumber, type, section, day, startTime, endTime);
     }
 
+    private Calendar getTermStartDate() {
+        // Currently just returns the term start date for the summer term, but should lookup
+        // the term start date - TODO: need to add API to lookup term information
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MONTH, Calendar.MAY);
+        cal.set(Calendar.YEAR, 2017);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        return cal;
+    }
+
     public Calendar getCalendarStartTime() {
         try {
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.MONTH, Calendar.MAY);
-            cal.set(Calendar.YEAR, 2017);
-            cal.set(Calendar.DAY_OF_MONTH, 1);
+            Calendar cal = this.getTermStartDate();
             Date date = componentDateFormat.parse(this.startTime);
             cal.setTime(date);
             return cal;
@@ -229,10 +242,7 @@ public class CourseComponent {
 
     public Calendar getCalendarEndTime() {
         try {
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.MONTH, Calendar.MAY);
-            cal.set(Calendar.YEAR, 2017);
-            cal.set(Calendar.DAY_OF_MONTH, 1);
+            Calendar cal = this.getTermStartDate();
             Date date = componentDateFormat.parse(this.endTime);
             cal.setTime(date);
             return cal;
@@ -305,4 +315,5 @@ public class CourseComponent {
                 return null;
         }
     }
+
 }

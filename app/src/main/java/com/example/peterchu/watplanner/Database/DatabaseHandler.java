@@ -61,6 +61,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_START_DATE = "startDate";
     private static final String KEY_END_DATE = "endDate";
     private static final String KEY_INSTRUCTORS = "instructors";
+    private static final String KEY_TERM = "title";
 
     private static DatabaseHandler dbSingleton;
 
@@ -155,6 +156,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                         values.put(KEY_BUIDING, sClass.getLocation().getBuilding());
                         values.put(KEY_ROOM, sClass.getLocation().getRoom());
                         values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
+                        values.put(KEY_TERM, courseSchedule.getTerm());
                         Log.d("DBHandler", "Adding Schedules for " + courseSchedule.getSubject() + courseSchedule.getCatalogNumber() + " - " + weekday);
                         db.insert(TABLE_SCHEDULES, null, values);
                     }
@@ -413,6 +415,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         courseComponent.setIsClosed(cursor.getInt(14) == 1);
         courseComponent.setIsTba(cursor.getInt(15) == 1);
         courseComponent.setDay(cursor.getString(16));
+        courseComponent.setTerm(cursor.getString(17));
         Location loc = new Location();
         loc.setBuilding(cursor.getString(17));
         loc.setRoom(cursor.getString(18));
