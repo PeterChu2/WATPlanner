@@ -8,10 +8,6 @@ import com.example.peterchu.watplanner.data.DataRepository;
 
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
-import org.chocosolver.solver.constraints.LogicalConstraintFactory;
-import org.chocosolver.solver.constraints.SatFactory;
-import org.chocosolver.solver.constraints.nary.cnf.ILogical;
-import org.chocosolver.solver.constraints.nary.cnf.LogOp;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
@@ -61,29 +57,20 @@ public class CourseScheduler {
             List<CourseComponent> labs = dataRepository.getLabs(id);
             List<CourseComponent> seminars = dataRepository.getSeminars(id);
 
-            // Constraint: Only one section for a lecture
             if (lectures.size() > 0) {
-                List<List<BoolVar>> lecturesBySection = getBoolListsBySection(lectures);
-                for (int i = 0; i < lecturesBySection.size() - 1; i++) {
-                    List<BoolVar> sectionA = lecturesBySection.get(i);
-                    BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
-                    Constraint left = and(a);
-                    Constraint negLeft = not(or(a));
-                    for (int j = i + 1; j < lecturesBySection.size(); j++) {
-                        List<BoolVar> sectionB = lecturesBySection.get(j);
-                        BoolVar[] b = sectionB.toArray(new BoolVar[sectionB.size()]);
-                        Constraint right = and(b);
-                        Constraint negRight = not(or(b));
-                        solver.post(or(and(left, negRight), and(right, negLeft)));
-                    }
-                }
+                addConstraints(lectures);
+            }
 
-                Set<Pair<BoolVar, BoolVar>> conflicts = generateConflicts(lecturesBySection);
+            if (tutorials.size() > 0) {
+                addConstraints(tutorials);
+            }
 
-                // Constraint: Don't allow conflicts in solution
-                for (Pair<BoolVar, BoolVar> pair : conflicts) {
-                    solver.post(not(and(pair.first, pair.second)));
-                }
+            if (labs.size() > 0) {
+                addConstraints(labs);
+            }
+
+            if (seminars.size() > 0) {
+                addConstraints(seminars);
             }
         }
 
@@ -91,6 +78,33 @@ public class CourseScheduler {
             do {
                 Log.d("test", "");
             } while (solver.nextSolution());
+        }
+    }
+
+    /**
+     * Adds constraints to the solver
+     */
+    private void addConstraints(List<CourseComponent> lectures) throws ParseException {
+        List<List<BoolVar>> sectionList = getBoolListsBySection(lectures);
+
+        if (sectionList.size() == 1) {
+            List<BoolVar> sectionA = sectionList.get(0);
+            BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
+            solver.post(and(a));
+        } else if (sectionList.size() > 1) {
+            for (int i = 0; i < sectionList.size() - 1; i++) {
+                List<BoolVar> sectionA = sectionList.get(i);
+                BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
+                Constraint left = and(a);
+                Constraint negLeft = not(or(a));
+                for (int j = i + 1; j < sectionList.size(); j++) {
+                    List<BoolVar> sectionB = sectionList.get(j);
+                    BoolVar[] b = sectionB.toArray(new BoolVar[sectionB.size()]);
+                    Constraint right = and(b);
+                    Constraint negRight = not(or(b));
+                    solver.post(or(and(left, negRight), and(right, negLeft)));
+                }
+            }
         }
     }
 
