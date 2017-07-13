@@ -212,11 +212,39 @@ public class CourseComponent {
         return String.format("%s %s - %s %s - %s %s~%s", subject, catalogNumber, type, section, day, startTime, endTime);
     }
 
+    public Calendar getCalendarStartTime() {
+        try {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.MONTH, Calendar.MAY);
+            cal.set(Calendar.YEAR, 2017);
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            Date date = componentDateFormat.parse(this.startTime);
+            cal.setTime(date);
+            return cal;
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    public Calendar getCalendarEndTime() {
+        try {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.MONTH, Calendar.MAY);
+            cal.set(Calendar.YEAR, 2017);
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            Date date = componentDateFormat.parse(this.endTime);
+            cal.setTime(date);
+            return cal;
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public List<WeekViewEvent> toWeekViewEvents(int month) {
         List<WeekViewEvent> weekViewEvents = new ArrayList<WeekViewEvent>();
         try {
-            Date eventStartTime = componentDateFormat.parse(this.startTime);
-            Date eventEndTime = componentDateFormat.parse(this.endTime);
+            Calendar eventStartDate = this.getCalendarStartTime();
+            Calendar eventEndDate = this.getCalendarEndTime();
             String eventName = String.format("%s %s %s", subject, catalogNumber, type);
 
             Calendar date = Calendar.getInstance();
@@ -232,17 +260,16 @@ public class CourseComponent {
             while (date.get(Calendar.MONTH) == month) {
                 if (Integer.valueOf(date.get(Calendar.DAY_OF_WEEK)) == this.getDayOfWeek()) {
                     WeekViewCourseEvent event = new WeekViewCourseEvent(this);
-                    Calendar startTime = getCalendarDate(eventStartTime, date);
-                    Calendar endTime = getCalendarDate(eventEndTime, date);
 
-                    endTime.set(Calendar.YEAR, date.get(Calendar.YEAR));
-                    endTime.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
-                    endTime.set(Calendar.MONTH, date.get(Calendar.MONTH));
-                    endTime.set(Calendar.HOUR_OF_DAY, eventEndTime.getHours());
-                    endTime.set(Calendar.MINUTE, eventEndTime.getMinutes());
+                    eventStartDate.set(Calendar.YEAR, date.get(Calendar.YEAR));
+                    eventStartDate.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
+                    eventStartDate.set(Calendar.MONTH, date.get(Calendar.MONTH));
+                    eventEndDate.set(Calendar.YEAR, date.get(Calendar.YEAR));
+                    eventEndDate.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
+                    eventEndDate.set(Calendar.MONTH, date.get(Calendar.MONTH));
 
-                    event.setStartTime(startTime);
-                    event.setEndTime(endTime);
+                    event.setStartTime(eventStartDate);
+                    event.setEndTime(eventEndDate);
                     event.setLocation(location.toString());
                     event.setName(eventName);
                     weekViewEvents.add(event);
@@ -276,15 +303,5 @@ public class CourseComponent {
             default:
                 return null;
         }
-    }
-
-    private Calendar getCalendarDate(Date eventTime, Calendar eventDate) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, eventDate.get(Calendar.YEAR));
-        cal.set(Calendar.DAY_OF_MONTH, eventDate.get(Calendar.DAY_OF_MONTH));
-        cal.set(Calendar.MONTH, eventDate.get(Calendar.MONTH));
-        cal.set(Calendar.HOUR_OF_DAY, eventTime.getHours());
-        cal.set(Calendar.MINUTE, eventTime.getMinutes());
-        return cal;
     }
 }

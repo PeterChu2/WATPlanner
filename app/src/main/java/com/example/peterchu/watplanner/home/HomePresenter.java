@@ -84,12 +84,10 @@ class HomePresenter implements BasePresenter {
     public void onExportCoursesToCalendar(List<CourseComponent> courseSchedule) {
         for (CourseComponent courseComponent : courseSchedule) {
             long calID = getDefaultCalendarID(this.homeFragment.getActivity());
-            Calendar beginTime = Calendar.getInstance();
-            beginTime.set(2016, 0, 19, 7, 30);
-            long startMillis = beginTime.getTimeInMillis();
-            Calendar endTime = Calendar.getInstance();
-            endTime.set(2016, 0, 19, 8, 30);
-            long endMillis = endTime.getTimeInMillis();
+            Calendar startDate = courseComponent.getCalendarStartTime();
+            Calendar endDate = courseComponent.getCalendarEndTime();
+            long startMillis = startDate.getTimeInMillis();
+            long endMillis = endDate.getTimeInMillis();
 
             ContentResolver cr = this.homeFragment.getActivity().getContentResolver();
             ContentValues values = new ContentValues();
@@ -100,6 +98,7 @@ class HomePresenter implements BasePresenter {
             values.put(CalendarContract.Events.DESCRIPTION, courseComponent.getTitle());
             values.put(CalendarContract.Events.CALENDAR_ID, calID);
             values.put(CalendarContract.Events.EVENT_TIMEZONE, "America/Los_Angeles");
+            values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY");
 
             boolean canWriteCalendar = ContextCompat.checkSelfPermission(
                     this.homeFragment.getActivity(),
