@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.home;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -17,6 +18,7 @@ import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -26,11 +28,14 @@ class HomePresenter implements BasePresenter {
 
     private HomeFragment homeFragment;
     private DataRepository dataRepository;
+    private Activity activity;
 
     public HomePresenter(HomeFragment homeFragment,
-                         DataRepository dataRepository) {
+                         DataRepository dataRepository,
+                         Activity activity) {
         this.homeFragment = homeFragment;
         this.dataRepository = dataRepository;
+        this.activity = activity;
         homeFragment.setPresenter(this);
     }
 
@@ -40,14 +45,7 @@ class HomePresenter implements BasePresenter {
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
             @Override
             public void onDataSynced() {
-                // Load user's saved courses into the list
-                final Set<String> savedCourses = dataRepository.getUserCourses();
-                if (!savedCourses.isEmpty()) {
-                    List<Course> courses = dataRepository.getCourses(
-                            savedCourses.toArray(new String[savedCourses.size()]));
-                    homeFragment.emptyCourseList();
-                    homeFragment.addCourses(courses);
-                }
+                configureSchedule(getSavedCourses());
             }
 
             @Override
@@ -57,20 +55,35 @@ class HomePresenter implements BasePresenter {
         });
     }
 
-    public void onCourseAdd(String subject, String catalogNumber) {
-        Course course = dataRepository.getCourse(subject, catalogNumber);
-        if (course == null) {
-            Toast.makeText(homeFragment.getContext(),
-                    "Course is invalid or not offered this term!",
-                    Toast.LENGTH_LONG).show();
+    private void configureSchedule(List<Course> courses) {
+        if (courses == null || courses.size() == 0) {
+            homeFragment.setCourseSchedule(new ArrayList<CourseComponent>());
             return;
         }
-        dataRepository.addUserCourse(course.getId());
+
+        for (Course course : courses) {
+            dataRepository.findOrGetCourseSchedule(
+                    course,
+                    new DataRepository.CourseScheduleCallback() {
+                        @Override
+                        public void onCourseScheduleRetrieved(List<CourseComponent> schedules) {
+                            homeFragment.setCourseSchedule(schedules);
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            // do nothing.
+                        }
+                    },
+                    this.activity
+            );
+        }
     }
 
     public void onCourseRemoved(Course course) {
         dataRepository.removeUserCourse(course.getId());
         homeFragment.removeCourse(course);
+        configureSchedule(getSavedCourses()); // refresh calendar.
     }
 
     public void onSearchOpened() {
@@ -137,5 +150,18 @@ class HomePresenter implements BasePresenter {
         }
         managedCursor.close();
         return 1;
+    }
+
+    private List<Course> getSavedCourses() {
+        // Load user's saved courses into the list
+        final Set<String> savedCourses = dataRepository.getUserCourses();
+        List<Course> courses = new ArrayList<>();
+        if (!savedCourses.isEmpty()) {
+            courses = dataRepository.getCourses(
+                    savedCourses.toArray(new String[savedCourses.size()]));
+            homeFragment.emptyCourseList();
+            homeFragment.addCourses(courses);
+        }
+        return courses;
     }
 }

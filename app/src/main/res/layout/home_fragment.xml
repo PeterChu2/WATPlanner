@@ -1,15 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <ListView
-        android:id="@+id/user_courses_list"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:overScrollMode="never"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <android.support.v7.widget.CardView
+                        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="6dp"
+                        card_view:cardBackgroundColor="@android:color/white"
+                        card_view:cardCornerRadius="2dp"
+                        card_view:cardUseCompatPadding="true">
+
+                        <com.alamkanak.weekview.WeekView
+                            android:id="@+id/weekViewHome"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:eventTextColor="@android:color/white"
+                            app:textSize="12sp"
+                            app:hourHeight="40dp"
+                            app:headerColumnPadding="8dp"
+                            app:headerColumnTextColor="#8f000000"
+                            app:headerRowPadding="12dp"
+                            app:columnGap="8dp"
+                            app:noOfVisibleDays="5"
+                            app:headerRowBackgroundColor="#ffefefef"
+                            app:dayBackgroundColor="#05000000"
+                            app:todayBackgroundColor="#1848adff"
+                            app:headerColumnBackground="#ffffffff" />
+
+                    </android.support.v7.widget.CardView>
+
+                    <com.example.peterchu.watplanner.ResizableListView.ResizableListView
+                        android:id="@+id/user_courses_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/white"
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+                </LinearLayout>
+
+        </RelativeLayout>
+
+    </ScrollView>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

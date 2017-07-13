@@ -1,15 +1,11 @@
 package com.example.peterchu.watplanner.home;
 
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.peterchu.watplanner.Database.DatabaseHandler;
-import com.example.peterchu.watplanner.Networking.ApiClient;
-import com.example.peterchu.watplanner.Networking.ApiInterface;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -35,7 +31,7 @@ public class HomeActivity extends AppCompatActivity {
                 .add(R.id.container, homeFragment)
                 .commit();
 
-        homePresenter = new HomePresenter(homeFragment, DataRepository.getDataRepository(this));
+        homePresenter = new HomePresenter(homeFragment, DataRepository.getDataRepository(this), this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
