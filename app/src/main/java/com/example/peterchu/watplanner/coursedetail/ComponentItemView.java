@@ -15,7 +15,7 @@ import com.example.peterchu.watplanner.R;
  * Created by peterchu on 2017-06-19.
  */
 
-class ComponentItemView extends FrameLayout {
+public class ComponentItemView extends FrameLayout {
     private Context mContext;
     private String mType;
     private String mSection;
