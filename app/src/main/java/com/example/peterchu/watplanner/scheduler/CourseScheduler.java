@@ -3,6 +3,7 @@ package com.example.peterchu.watplanner.scheduler;
 import android.util.Log;
 import android.util.Pair;
 
+import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
 
@@ -38,13 +39,21 @@ public class CourseScheduler {
     private DataRepository dataRepository;
     private Map<BoolVar, CourseComponent> boolToComponent;
 
+    private List<CourseComponent> currentSchedule;
+
     public CourseScheduler(DataRepository dataRepository) {
         this.dataRepository = dataRepository;
         solver = new Solver("Conflict-free Schedules");
         boolToComponent = new HashMap<>();
+        currentSchedule = new ArrayList<>();
     }
 
-    public void generateSchedules() throws ParseException {
+    /**
+     * The core function of this class that attempts to generate conflict-free schedules
+     *
+     * @return true if a conflict-free schedule was found, false otherwise
+     */
+    public boolean generateSchedules() throws ParseException {
         Set<String> courseIds = dataRepository.getUserCourses();
 
         List<List<BoolVar>> totalBools = new ArrayList<>();
@@ -53,7 +62,7 @@ public class CourseScheduler {
         for (String courseId : courseIds) {
             int id = Integer.parseInt(courseId);
 
-            // List is already sorted
+            // Lists are already sorted
             List<CourseComponent> lectures = dataRepository.getLectures(id);
             List<CourseComponent> tutorials = dataRepository.getTutorials(id);
             List<CourseComponent> labs = dataRepository.getLabs(id);
@@ -81,15 +90,26 @@ public class CourseScheduler {
         }
 
         // Look for conflicts and tell solver to not include those conflicting pairs in solution
-        for (Pair<BoolVar, BoolVar> conflict : generateConflicts(totalBools)) {
+        Set<Pair<BoolVar, BoolVar>> conflicts = generateConflicts(totalBools);
+        for (Pair<BoolVar, BoolVar> conflict : conflicts) {
             solver.post(not(and(conflict.first, conflict.second)));
         }
 
+        // Look for a conflict-free schedule
         if (solver.findSolution()) {
-            do {
-                Log.d("test", "");
-            } while (solver.nextSolution());
+            for (Map.Entry<BoolVar, CourseComponent> entry : boolToComponent.entrySet()) {
+                if (entry.getKey().getValue() == 1) {
+                    currentSchedule.add(entry.getValue());
+                }
+            }
+            return true;
+        } else {
+            return false;
         }
+    }
+
+    public List<CourseComponent> getCurrentSchedule() {
+        return currentSchedule;
     }
 
     /**
