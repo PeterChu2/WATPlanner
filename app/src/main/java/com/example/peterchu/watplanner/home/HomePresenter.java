@@ -17,6 +17,7 @@ import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
+import com.example.peterchu.watplanner.data.IDataRepository;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,11 +28,11 @@ import java.util.TimeZone;
 class HomePresenter implements BasePresenter {
 
     private HomeFragment homeFragment;
-    private DataRepository dataRepository;
+    private IDataRepository dataRepository;
     private Activity activity;
 
     public HomePresenter(HomeFragment homeFragment,
-                         DataRepository dataRepository,
+                         IDataRepository dataRepository,
                          Activity activity) {
         this.homeFragment = homeFragment;
         this.dataRepository = dataRepository;

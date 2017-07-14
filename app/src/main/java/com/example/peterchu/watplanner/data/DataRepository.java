@@ -26,7 +26,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class DataRepository {
+public class DataRepository implements IDataRepository {
 
     private static DataRepository INSTANCE = null;
 
@@ -40,16 +40,14 @@ public class DataRepository {
         this.databaseHandler = DatabaseHandler.getInstance(context);
     }
 
-    public static DataRepository getDataRepository(Context context) {
+    public static IDataRepository getDataRepository(Context context) {
         if (INSTANCE == null) {
             INSTANCE = new DataRepository(context);
         }
         return INSTANCE;
     }
 
-    /**
-     * Removes a course from the user's saved courses
-     */
+    @Override
     public void removeUserCourse(int courseId) {
         Set<String> addedCourses = getUserCourses();
         addedCourses.remove(String.valueOf(courseId));
@@ -61,9 +59,7 @@ public class DataRepository {
                 .apply();
     }
 
-    /**
-     * Adds a course from the user's saved courses
-     */
+    @Override
     public void addUserCourse(int courseId) {
         Set<String> addedCourses = getUserCourses();
         addedCourses.add(String.valueOf(courseId));
@@ -75,12 +71,7 @@ public class DataRepository {
                 .apply();
     }
 
-    /**
-     * This performs the initial syncing of the app:
-     * 1. Retrieve all courses for the current term
-     * 2. Save these courses into the local database
-     * If data is already synced, this method returns immediately.
-     */
+    @Override
     public void syncData(final SyncDataCallback callback) {
         // TODO: Should grab current term from API and use that value instead of hardcoding it
         if (databaseHandler.getCoursesCount() == 0) {
@@ -124,10 +115,7 @@ public class DataRepository {
         }
     }
 
-    /**
-     * Attempts to retrieve a course's schedule from DB, fetches from Waterloo's API if not found, inserting
-     * into DB prior to returning as a list of CourseComponents
-     */
+    @Override
     public void findOrGetCourseSchedule(final Course course, final CourseScheduleCallback callback, final Activity activity) {
         List<CourseComponent> components = databaseHandler.getCourseSchedule(course.getSubject(), course.getNumber());
         Log.d("FIND OR GET", ""+components.size());
@@ -173,31 +161,27 @@ public class DataRepository {
                 });
     }
 
+    @Override
     public List<CourseComponent> getLectures(int courseId) {
         return databaseHandler.getCourseComponents(courseId, Constants.LEC);
     }
 
+    @Override
     public List<CourseComponent> getSeminars(int courseId) {
         return databaseHandler.getCourseComponents(courseId, Constants.SEM);
     }
 
+    @Override
     public List<CourseComponent> getLabs(int courseId) {
         return databaseHandler.getCourseComponents(courseId, Constants.LAB);
     }
 
+    @Override
     public List<CourseComponent> getTutorials(int courseId) {
         return databaseHandler.getCourseComponents(courseId, Constants.TUT);
     }
 
-
-
-    /**
-     * Fetches in-depth details of a course
-     *
-     * @param subject      subject code (e.g. ECE)
-     * @param courseNumber number associated with subject (e.g. 105)
-     * @param callback     callback to trigger when response is received
-     */
+    @Override
     public void getCourseDetails(String subject,
                                  String courseNumber,
                                  final CourseDetailsCallback callback) {
@@ -219,28 +203,27 @@ public class DataRepository {
                 });
     }
 
-    /**
-     * Returns all Courses stored in the SQL database
-     */
+    @Override
     public List<Course> getAllCourses() {
         return databaseHandler.getAllCourses();
     }
 
-    /**
-     * Returns Courses stored in the SQL database given an array of IDs
-     */
+    @Override
     public List<Course> getCourses(String[] ids) {
         return databaseHandler.getCourses(ids);
     }
 
+    @Override
     public Course getCourse(String subject, String courseNumber) {
         return databaseHandler.getCourseByCourseCode(subject, courseNumber);
     }
 
+    @Override
     public Course getCourse(int courseId) {
         return databaseHandler.getCourse(courseId);
     }
 
+    @Override
     public Set<String> getUserCourses() {
         return sharedPreferences.getStringSet(
                 Constants.SHARED_PREFS_ADDED_COURSES, new HashSet<String>());

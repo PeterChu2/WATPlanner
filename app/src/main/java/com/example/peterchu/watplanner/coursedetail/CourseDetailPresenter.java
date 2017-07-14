@@ -7,6 +7,7 @@ import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
+import com.example.peterchu.watplanner.data.IDataRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -14,7 +15,7 @@ import java.util.Set;
 class CourseDetailPresenter implements BasePresenter {
 
     private CourseDetailFragment courseDetailFragment;
-    private DataRepository dataRepository;
+    private IDataRepository dataRepository;
     private int courseId;
 
     private boolean isFirstLoad = true;
@@ -23,7 +24,7 @@ class CourseDetailPresenter implements BasePresenter {
 
     CourseDetailPresenter(CourseDetailFragment courseDetailFragment,
                           int courseId,
-                          DataRepository dataRepository,
+                          IDataRepository dataRepository,
                           Activity activity) {
         this.courseDetailFragment = courseDetailFragment;
         this.courseId = courseId;
