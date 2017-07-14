@@ -17,6 +17,7 @@ import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
+import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,6 +46,7 @@ class HomePresenter implements BasePresenter {
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
             @Override
             public void onDataSynced() {
+//                CourseScheduler scheduler = new CourseScheduler(dataRepository)
                 configureSchedule(getSavedCourses());
             }
 
