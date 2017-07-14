@@ -115,9 +115,9 @@ public class CourseScheduler {
     /**
      * Adds constraints to the solver
      */
-    private List<List<BoolVar>> addConstraints(List<CourseComponent> lectures)
+    private List<List<BoolVar>> addConstraints(List<CourseComponent> components)
             throws ParseException {
-        List<List<BoolVar>> sectionList = getBoolListsBySection(lectures);
+        List<List<BoolVar>> sectionList = getBoolListsBySection(components);
 
         if (sectionList.size() == 1) {
             List<BoolVar> sectionA = sectionList.get(0);
