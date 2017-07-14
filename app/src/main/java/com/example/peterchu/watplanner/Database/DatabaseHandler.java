@@ -122,8 +122,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         public void run() {
             SQLiteDatabase db = this.dbHandler.getWritableDatabase();
 
+            Set<String> componentSectionDayCombos = new HashSet<>();
             for (CourseSchedule courseSchedule : this.schedules) {
                 ContentValues values = new ContentValues();
+
                 values.put(KEY_CLASS_NUMBER, courseSchedule.getClassNumber());
                 values.put(KEY_SUBJECT, courseSchedule.getSubject());
                 values.put(KEY_NUMBER, courseSchedule.getCatalogNumber());
@@ -147,6 +149,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     String str = d.getWeekdays() == null ? "" : d.getWeekdays();
                     Set<String> componentDays = tokenizeDays(str);
                     for (String weekday: componentDays) {
+                        String componentSectionDayCombo = String.format("%s%s", typeSection, weekday).toUpperCase();
+                        if (componentSectionDayCombos.contains(componentSectionDayCombo)) {
+                            continue;
+                        }
+                        componentSectionDayCombos.add(componentSectionDayCombo);
                         values.put(KEY_START_TIME, d.getStartTime());
                         values.put(KEY_END_TIME, d.getEndTime());
                         values.put(KEY_IS_CANCELLED, d.getIsCancelled() ? 1 : 0);
@@ -435,6 +442,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             if (d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) continue;
             String str = d.getWeekdays() == null ? "" : d.getWeekdays();
             Set<String> componentDays = tokenizeDays(str);
+            String[] typeSection = course.getSection().split(" ");
 
             // Create a component for each day this class exists
             for (String weekday: componentDays) {
@@ -448,7 +456,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 courseComponent.setWaitingCapacity(course.getWaitingCapacity());
                 courseComponent.setWaitingTotal(course.getWaitingTotal());
 
-                String[] typeSection = course.getSection().split(" ");
                 courseComponent.setType(typeSection[0]);
                 courseComponent.setSection(typeSection[1]);
 
