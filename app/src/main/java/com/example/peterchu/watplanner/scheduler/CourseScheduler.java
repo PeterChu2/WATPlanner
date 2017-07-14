@@ -47,6 +47,8 @@ public class CourseScheduler {
     public void generateSchedules() throws ParseException {
         Set<String> courseIds = dataRepository.getUserCourses();
 
+        List<List<BoolVar>> totalBools = new ArrayList<>();
+
         // Set constraints for each course
         for (String courseId : courseIds) {
             int id = Integer.parseInt(courseId);
@@ -57,21 +59,30 @@ public class CourseScheduler {
             List<CourseComponent> labs = dataRepository.getLabs(id);
             List<CourseComponent> seminars = dataRepository.getSeminars(id);
 
+            List<BoolVar> subTotal = new ArrayList<>();
+
             if (lectures.size() > 0) {
-                addConstraints(lectures);
+                for (List<BoolVar> subList : addConstraints(lectures)) subTotal.addAll(subList);
             }
 
             if (tutorials.size() > 0) {
-                addConstraints(tutorials);
+                for (List<BoolVar> subList : addConstraints(tutorials)) subTotal.addAll(subList);
             }
 
             if (labs.size() > 0) {
-                addConstraints(labs);
+                for (List<BoolVar> subList : addConstraints(labs)) subTotal.addAll(subList);
             }
 
             if (seminars.size() > 0) {
-                addConstraints(seminars);
+                for (List<BoolVar> subList : addConstraints(seminars)) subTotal.addAll(subList);
             }
+
+            totalBools.add(subTotal);
+        }
+
+        // Look for conflicts and tell solver to not include those conflicting pairs in solution
+        for (Pair<BoolVar, BoolVar> conflict : generateConflicts(totalBools)) {
+            solver.post(not(and(conflict.first, conflict.second)));
         }
 
         if (solver.findSolution()) {
@@ -84,7 +95,8 @@ public class CourseScheduler {
     /**
      * Adds constraints to the solver
      */
-    private void addConstraints(List<CourseComponent> lectures) throws ParseException {
+    private List<List<BoolVar>> addConstraints(List<CourseComponent> lectures)
+            throws ParseException {
         List<List<BoolVar>> sectionList = getBoolListsBySection(lectures);
 
         if (sectionList.size() == 1) {
@@ -106,8 +118,14 @@ public class CourseScheduler {
                 }
             }
         }
+
+        return sectionList;
     }
 
+    /**
+     * Checks if pairs of course components conflict and generates a conflict pair.
+     * Representation stays as BoolVar so the SAT solver can cleanly accept the object.
+     */
     private Set<Pair<BoolVar, BoolVar>> generateConflicts(List<List<BoolVar>> components)
             throws ParseException {
         Set<Pair<BoolVar, BoolVar>> conflicts = new HashSet<>();
@@ -134,6 +152,11 @@ public class CourseScheduler {
         return conflicts;
     }
 
+    /**
+     * Checks if two classes overlap each others. Conflicts if:
+     * 1. end time of class A is after start time of class B
+     * 2. start time of class A is before end time of class B
+     */
     private boolean hasConflict(CourseComponent classA, CourseComponent classB)
             throws ParseException {
         Date startA = componentDateFormat.parse(classA.getStartTime());
@@ -146,6 +169,12 @@ public class CourseScheduler {
                 || !classA.getDay().equals(classB.getDay()));
     }
 
+    /**
+     * Groups together course components by section into a list of lists. This is for easier
+     * section by section constraint generation.
+     *
+     * @param components MUST BE FOR A SINGLE COURSE
+     */
     private List<List<BoolVar>> getBoolListsBySection(List<CourseComponent> components) {
         List<List<BoolVar>> result = new ArrayList<>();
         if (components.isEmpty()) return result;
