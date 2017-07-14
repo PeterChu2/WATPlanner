@@ -88,7 +88,6 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             }
         });
 
-        // todo(ed) - ADD TITLE FOR CALENDAR
         weekView = (WeekView) root.findViewById(R.id.weekViewHome);
 
         searchView = (MaterialSearchView) getActivity()
