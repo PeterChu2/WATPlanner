@@ -35,4 +35,5 @@ dependencies {
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
     testCompile 'junit:junit:4.12'
     compile 'com.github.alamkanak:android-week-view:1.2.6'
+    compile files('src/choco-3.3.3-j7/choco-solver-3.3.3-j7-with-dependencies.jar')
 }
