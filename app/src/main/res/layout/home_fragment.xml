@@ -29,22 +29,45 @@
                         card_view:cardCornerRadius="2dp"
                         card_view:cardUseCompatPadding="true">
 
-                        <com.alamkanak.weekview.WeekView
-                            android:id="@+id/weekViewHome"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="300dp"
-                            app:eventTextColor="@android:color/white"
-                            app:textSize="12sp"
-                            app:hourHeight="40dp"
-                            app:headerColumnPadding="8dp"
-                            app:headerColumnTextColor="#8f000000"
-                            app:headerRowPadding="12dp"
-                            app:columnGap="8dp"
-                            app:noOfVisibleDays="5"
-                            app:headerRowBackgroundColor="#ffefefef"
-                            app:dayBackgroundColor="#05000000"
-                            app:todayBackgroundColor="#1848adff"
-                            app:headerColumnBackground="#ffffffff" />
+                            android:layout_height="match_parent"
+                            android:padding="12dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:textAppearance="@android:style/TextAppearance.Material.Title"
+                                android:text="@string/calendar_title_home"
+                                android:textColor="@color/materialText1" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="10dp"
+                                android:text="@string/calendar_title_hint"
+                                android:textColor="@color/materialText2" />
+
+                            <com.alamkanak.weekview.WeekView
+                                android:id="@+id/weekViewHome"
+                                android:layout_width="match_parent"
+                                android:layout_height="300dp"
+                                app:eventTextColor="@android:color/white"
+                                app:textSize="12sp"
+                                app:hourHeight="40dp"
+                                app:headerColumnPadding="8dp"
+                                app:headerColumnTextColor="#8f000000"
+                                app:headerRowPadding="12dp"
+                                app:columnGap="8dp"
+                                app:noOfVisibleDays="5"
+                                app:headerRowBackgroundColor="#ffefefef"
+                                app:dayBackgroundColor="#05000000"
+                                app:todayBackgroundColor="#1848adff"
+                                app:headerColumnBackground="#ffffffff" />
+
+                        </LinearLayout>
 
                     </android.support.v7.widget.CardView>
 
