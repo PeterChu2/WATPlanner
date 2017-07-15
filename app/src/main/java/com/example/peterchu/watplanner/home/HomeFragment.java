@@ -179,7 +179,9 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         courseAdapter.remove(course);
         courseAdapter.notifyDataSetChanged();
         weekView.notifyDatasetChanged();
-        Snackbar.make(getActivity().findViewById(R.id.container), "Course removed", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(getActivity().findViewById(R.id.container),
+                "Course removed",
+                Snackbar.LENGTH_SHORT).show();
     }
 
     protected void addSearchSuggestions(List<Course> courses) {

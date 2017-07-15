@@ -3,13 +3,11 @@ package com.example.peterchu.watplanner.scheduler;
 import android.util.Pair;
 
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
-import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.variables.BoolVar;
-import org.chocosolver.solver.variables.Variable;
 import org.chocosolver.solver.variables.VariableFactory;
 
 import java.text.DateFormat;
@@ -39,7 +37,7 @@ public class CourseScheduler {
     private IDataRepository dataRepository;
 
     private Map<BoolVar, List<CourseComponent>> boolToGroupedComponents;
-    private Map<BoolVar, CourseComponent> booltoComponent;
+    private Map<BoolVar, CourseComponent> boolToComponent;
 
     private List<List<CourseComponent>> currentSchedule;
 
@@ -47,8 +45,15 @@ public class CourseScheduler {
         this.dataRepository = dataRepository;
         solver = new Solver("Conflict-free Schedules");
         boolToGroupedComponents = new HashMap<>();
-        booltoComponent = new HashMap<>();
+        boolToComponent = new HashMap<>();
         currentSchedule = new ArrayList<>();
+    }
+
+    public void reset() {
+        solver = new Solver("Conflict-free Schedules");
+        boolToGroupedComponents.clear();
+        boolToComponent.clear();
+        currentSchedule.clear();
     }
 
     /**
@@ -133,8 +138,6 @@ public class CourseScheduler {
             solver.post(constraint);
         } else if (sectionList.size() > 1) {
             Constraint total = null;
-
-            // W
             for (int i = 0; i < sectionList.size() - 1; i++) {
                 List<BoolVar> sectionA = sectionList.get(i);
                 BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
@@ -144,9 +147,6 @@ public class CourseScheduler {
                     List<BoolVar> sectionB = sectionList.get(j);
                     BoolVar[] b = sectionB.toArray(new BoolVar[sectionB.size()]);
                     Constraint right = and(b);
-                    if (j == sectionList.size() - 1) {
-                        boolToGroupedComponents.put(right.reif(), components.get(j));
-                    }
 
                     // Build up a constraint that we want at least one section in the solution
                     if (total == null) {
@@ -157,6 +157,11 @@ public class CourseScheduler {
 
                     // We constraint that we cannot have both sections in the solution
                     solver.post(not(and(left, right)));
+
+                    // Add last grouping
+                    if ((j == sectionList.size() - 1) && (i == j - 1)) {
+                        boolToGroupedComponents.put(right.reif(), components.get(j));
+                    }
                 }
             }
 
@@ -183,9 +188,9 @@ public class CourseScheduler {
 
                 // Check for conflicts between two courses
                 for (BoolVar boolA : courseA) {
-                    CourseComponent classA = booltoComponent.get(boolA);
+                    CourseComponent classA = boolToComponent.get(boolA);
                     for (BoolVar boolB : courseB) {
-                        CourseComponent classB = booltoComponent.get(boolB);
+                        CourseComponent classB = boolToComponent.get(boolB);
                         if (hasConflict(classA, classB)) {
                             conflicts.add(new Pair<>(boolA, boolB));
                         }
@@ -224,7 +229,7 @@ public class CourseScheduler {
             for (CourseComponent component : components) {
                 BoolVar boolVar = VariableFactory.bool(component.toString(), solver);
                 boolVars.add(boolVar);
-                booltoComponent.put(boolVar, component);
+                boolToComponent.put(boolVar, component);
             }
             result.add(boolVars);
         }

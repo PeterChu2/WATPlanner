@@ -35,8 +35,7 @@ class HomePresenter implements BasePresenter {
     private CourseScheduler scheduler;
 
     public HomePresenter(HomeFragment homeFragment,
-                         IDataRepository dataRepository,
-                         Activity activity) {
+                         IDataRepository dataRepository) {
         this.homeFragment = homeFragment;
         this.dataRepository = dataRepository;
         scheduler = new CourseScheduler(dataRepository);
@@ -49,7 +48,7 @@ class HomePresenter implements BasePresenter {
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
             @Override
             public void onDataSynced() {
-                getSavedCourses();
+                loadCourseCards();
                 generateScheduleForCalendar();
             }
 
@@ -60,9 +59,18 @@ class HomePresenter implements BasePresenter {
         });
     }
 
+    /**
+     * Tells the scheduler to run it's SAT solver to find a conflict-free schedule and the View
+     * to display it.
+     */
     private void generateScheduleForCalendar() {
         try {
-            scheduler.generateSchedules();
+            if (scheduler.generateSchedules()) {
+                Log.d("HomePresenter", "Conflict-free schedule generated!");
+            } else {
+                // The application should never enter this state, throw RTE
+                throw new IllegalStateException("No conflict-free schedule generated!");
+            }
         } catch (ParseException e) {
             Log.e("HomePresenter", "Failed to generate schedule: " + e);
             return;
@@ -73,6 +81,7 @@ class HomePresenter implements BasePresenter {
     public void onCourseRemoved(Course course) {
         dataRepository.removeUserCourse(course.getId());
         homeFragment.removeCourse(course);
+        scheduler.reset();
         generateScheduleForCalendar(); // refresh calendar.
     }
 
@@ -142,16 +151,17 @@ class HomePresenter implements BasePresenter {
         return 1;
     }
 
-    private List<Course> getSavedCourses() {
+    /**
+     * Tells the View to display user's saved course in the list as cards
+     */
+    private void loadCourseCards() {
         // Load user's saved courses into the list
         final Set<String> savedCourses = dataRepository.getUserCourses();
-        List<Course> courses = new ArrayList<>();
         if (!savedCourses.isEmpty()) {
-            courses = dataRepository.getCourses(
+            List<Course> courses = dataRepository.getCourses(
                     savedCourses.toArray(new String[savedCourses.size()]));
             homeFragment.emptyCourseList();
             homeFragment.addCourses(courses);
         }
-        return courses;
     }
 }
