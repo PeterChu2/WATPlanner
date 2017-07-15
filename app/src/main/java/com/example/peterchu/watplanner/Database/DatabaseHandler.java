@@ -57,7 +57,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_DAY = "day";
     private static final String KEY_BUIDING = "building";
     private static final String KEY_ROOM = "room";
-    private static final String KEY_COURSE_ID= "courseId";
+    private static final String KEY_COURSE_ID = "courseId";
     private static final String KEY_START_DATE = "startDate";
     private static final String KEY_END_DATE = "endDate";
     private static final String KEY_INSTRUCTORS = "instructors";
@@ -142,13 +142,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
                 // Date
                 List<ScheduledClass> scheduledClasses = courseSchedule.getScheduledClasses();
-                for (ScheduledClass sClass: scheduledClasses) {
+                for (ScheduledClass sClass : scheduledClasses) {
                     ScheduledClass.Date d = sClass.getDate();
                     if (d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) continue;
 
                     String str = d.getWeekdays() == null ? "" : d.getWeekdays();
                     Set<String> componentDays = tokenizeDays(str);
-                    for (String weekday: componentDays) {
+                    for (String weekday : componentDays) {
                         String componentSectionDayCombo = String.format("%s%s", typeSection, weekday).toUpperCase();
                         if (componentSectionDayCombos.contains(componentSectionDayCombo)) {
                             continue;
@@ -177,7 +177,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Helper
     private static String ListToSerializableString(List<String> in) {
         StringBuilder sb = new StringBuilder();
-        for (String s: in) {
+        for (String s : in) {
             sb.append(s + SERIALIZE_SEPARATOR);
         }
         if (in.size() > 0) sb.delete(sb.length() - SERIALIZE_SEPARATOR.length(), sb.length());
@@ -198,15 +198,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         String CREATE_SCHEDULES_TABLE = "CREATE TABLE " + TABLE_SCHEDULES + "("
                 + KEY_ID + " INTEGER PRIMARY KEY," + KEY_CLASS_NUMBER + " INTEGER,"
-                + KEY_SUBJECT + " TEXT,"  + KEY_NUMBER + " TEXT," + KEY_TITLE + " TEXT,"
+                + KEY_SUBJECT + " TEXT," + KEY_NUMBER + " TEXT," + KEY_TITLE + " TEXT,"
                 + KEY_ENROLLMENT_CAPACITY + " INTEGER," + KEY_ENROLLMENT_TOTAL + " INTEGER,"
                 + KEY_WAITING_CAPACITY + " INTEGER," + KEY_WAITING_TOTAL + " INTEGER,"
                 + KEY_TYPE + " TEXT," + KEY_SECTION_NUMBER + " TEXT," + KEY_START_TIME + " TEXT,"
                 + KEY_END_TIME + " TEXT," + KEY_IS_CANCELLED + " INTEGER," + KEY_IS_CLOSED + " INTEGER,"
                 + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT,"
-                + KEY_BUIDING + " TEXT," + KEY_ROOM+ " TEXT," + KEY_INSTRUCTORS+ " TEXT,"
+                + KEY_BUIDING + " TEXT," + KEY_ROOM + " TEXT," + KEY_INSTRUCTORS + " TEXT,"
                 + KEY_COURSE_ID + " INTEGER," +
-                " FOREIGN KEY ("+KEY_COURSE_ID+") REFERENCES "+TABLE_COURSES+"("+KEY_ID+"))";
+                " FOREIGN KEY (" + KEY_COURSE_ID + ") REFERENCES " + TABLE_COURSES + "(" + KEY_ID + "))";
 
         db.execSQL(CREATE_SCHEDULES_TABLE);
     }
@@ -254,18 +254,22 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Cursor cursor = db.query(
                 TABLE_COURSES,
-                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                new String[]{KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE},
                 KEY_ID + "=?",
-                new String[] { String.valueOf(id) },
+                new String[]{String.valueOf(id)},
                 null,
                 null,
                 null,
                 null
         );
 
-        if (cursor == null) { return null; }
+        if (cursor == null) {
+            return null;
+        }
         cursor.moveToFirst();
-        if (cursor.getCount() == 0) { return null; }
+        if (cursor.getCount() == 0) {
+            return null;
+        }
 
         Course course = new Course(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
         course.setId(Integer.parseInt(cursor.getString(0)));
@@ -289,7 +293,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         sb.deleteCharAt(sb.length() - 1);
         Cursor cursor = db.query(
                 TABLE_COURSES,
-                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                new String[]{KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE},
                 KEY_ID + " IN (" + sb.toString() + ")",
                 ids,
                 null,
@@ -314,10 +318,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     /**
      * Returns the course components of the passed in type for a course id.
+     *
      * @return A list of lists contaning course components grouped by section
      */
     public List<List<CourseComponent>> getCourseComponentsBySection(int courseId, String type) {
-        List<List<CourseComponent>> ret = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + TABLE_SCHEDULES
                 + " WHERE " + KEY_COURSE_ID + "=" + courseId
@@ -325,8 +329,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, null);
         Log.d("GET_LECTURES", "GETTING LECTURES");
 
-        groupBySection(cursor, ret);
-        return ret;
+        return groupBySection(cursor);
     }
 
     // Get courses by subject
@@ -336,9 +339,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Cursor cursor = db.query(
                 TABLE_COURSES,
-                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                new String[]{KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE},
                 KEY_SUBJECT + " = ?",
-                new String[] { subject },
+                new String[]{subject},
                 null,
                 null,
                 null,
@@ -362,9 +365,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Cursor cursor = db.query(
                 TABLE_COURSES,
-                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                new String[]{KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE},
                 KEY_ID + " COLLATE utf8_general_ci LIKE ?",
-                new String[] { "%" + criterion + "%" },
+                new String[]{"%" + criterion + "%"},
                 null,
                 null,
                 null,
@@ -434,7 +437,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         List<ScheduledClass> scheduledClasses = course.getScheduledClasses();
 
         // Iterate through "classes" (e.g. TUT, LEC, LAB)
-        for (ScheduledClass sClass: scheduledClasses) {
+        for (ScheduledClass sClass : scheduledClasses) {
             ScheduledClass.Date d = sClass.getDate();
 
             if (d.getIsTba() || d.getIsCancelled() || d.getIsClosed()) continue;
@@ -443,7 +446,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             String[] typeSection = course.getSection().split(" ");
 
             // Create a component for each day this class exists
-            for (String weekday: componentDays) {
+            for (String weekday : componentDays) {
                 CourseComponent courseComponent = new CourseComponent();
                 courseComponent.setClassNumber(course.getClassNumber());
                 courseComponent.setSubject(course.getSubject());
@@ -493,18 +496,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public List<List<CourseComponent>> getCourseSchedule(String subject, String catalogNumber) {
         SQLiteDatabase db = this.getReadableDatabase();
-
-        List<List<CourseComponent>> ret = new ArrayList<>();
-
         String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SUBJECT + "=\"" + subject
                 + "\" AND " + KEY_NUMBER + "=\"" + catalogNumber + "\"";
         Cursor cursor = db.rawQuery(selectQuery, null);
-
-        groupBySection(cursor, ret);
-        return ret;
+        return groupBySection(cursor);
     }
 
-    private void groupBySection(Cursor cursor, List<List<CourseComponent>> list) {
+    private List<List<CourseComponent>> groupBySection(Cursor cursor) {
+        List<List<CourseComponent>> list = new ArrayList<>();
         List<CourseComponent> currentList = new ArrayList<>();
         String currentSection = null;
         if (cursor.moveToFirst()) {
@@ -521,15 +520,16 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             if (currentList.size() > 0) list.add(currentList);
         }
         cursor.close();
+        return list;
     }
 
     public Course getCourseByCourseCode(String subject, String catalogNumber) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(
                 TABLE_COURSES,
-                new String[] { KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE },
+                new String[]{KEY_ID, KEY_SUBJECT, KEY_NUMBER, KEY_CREDITS, KEY_TITLE},
                 KEY_SUBJECT + "=UPPER(?) AND " + KEY_NUMBER + "=UPPER(?)",
-                new String[] { subject, catalogNumber },
+                new String[]{subject, catalogNumber},
                 null,
                 null,
                 null,
@@ -544,12 +544,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return course;
     }
 
-    /** No need for an UPDATE operation. **/
+    /**
+     * No need for an UPDATE operation.
+     **/
 
     // Deleting single Course
     public void deleteCourse(Course Course) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_COURSES, KEY_ID + " = ?", new String[] { String.valueOf(Course.getId()) });
+        db.delete(TABLE_COURSES, KEY_ID + " = ?", new String[]{String.valueOf(Course.getId())});
     }
 
     public void destroyAndRecreateDb() {
@@ -579,7 +581,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 
     // string is in format TTh, MF, etc.
-    private static Set<String> tokenizeDays (String str) {
+    private static Set<String> tokenizeDays(String str) {
         Set<String> days = new HashSet<String>();
         if (str.length() == 0) {
             return days;
