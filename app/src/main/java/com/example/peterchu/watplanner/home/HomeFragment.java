@@ -1,11 +1,14 @@
 package com.example.peterchu.watplanner.home;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -20,10 +23,12 @@ import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
 import com.example.peterchu.watplanner.BaseView;
+import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
+import com.example.peterchu.watplanner.coursedetail.ConflictResolveItemView;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -209,7 +214,22 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
                 return events;
             }
         });
-        weekView.setMinimumHeight(1200);
+
+        // Set an action when any event is clicked.
+        weekView.setOnEventClickListener(new WeekView.EventClickListener() {
+            @Override
+            public void onEventClick(WeekViewEvent event, RectF eventRect) {
+                CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
+                // todo: get List<CourseComponent>
+                ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
+                        HomeFragment.this.getContext(), courseComponent
+                );
+                Dialog d = new Dialog(HomeFragment.this.getContext());
+                d.setContentView(alternateSlotView);
+                d.show();
+            }
+        });
+
         weekView.setFirstDayOfWeek(Calendar.MONDAY);
         weekView.setShowNowLine(false);
         weekView.goToHour(8);

@@ -46,6 +46,7 @@ class HomePresenter implements BasePresenter {
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
             @Override
             public void onDataSynced() {
+                // todo: load non-conflicting courses!
                 configureSchedule(getSavedCourses());
             }
 
