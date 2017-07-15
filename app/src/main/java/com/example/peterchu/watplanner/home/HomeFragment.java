@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -27,7 +28,6 @@ import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
-import com.example.peterchu.watplanner.coursedetail.ConflictResolveItemView;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
 import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
@@ -168,7 +168,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     }
 
     public void showExportCalendarDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.MaterialLightDialogTheme);
         builder.setTitle("Export added courses to your schedule.");
 
         builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
@@ -236,11 +236,26 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     public void showConflictFreeAlternativesDialog(
             CourseComponent course,
             List<List<CourseComponent>> alternatives) {
-        ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
-                HomeFragment.this.getContext(),
-                course);
-        Dialog d = new Dialog(HomeFragment.this.getContext());
-        d.setContentView(alternateSlotView);
-        d.show();
+//        ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
+//                HomeFragment.this.getContext(),
+//                course);
+//        Dialog d = new Dialog(HomeFragment.this.getContext());
+//        d.setContentView(alternateSlotView);
+//        d.show();
+
+        final AlertDialog.Builder builder = homePresenter.createDialogBuilder(getContext(), course);
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                builder.create().dismiss();
+            }
+        });
+        builder.setItems(homePresenter.getListOfAlternativeTimes(course), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                builder.create().dismiss();
+            }
+        });
+        builder.show();
     }
 }

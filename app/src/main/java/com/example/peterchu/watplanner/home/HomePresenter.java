@@ -13,11 +13,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
+import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
@@ -190,6 +192,21 @@ class HomePresenter implements BasePresenter {
         }
     }
 
+    public AlertDialog.Builder createDialogBuilder(Context context, CourseComponent component) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.MaterialLightDialogTheme);
+        builder.setTitle(String.format("Switch %s section", getTypeSpelling(component.getType())));
+        return builder;
+    }
+
+    public CharSequence[] getListOfAlternativeTimes(CourseComponent courseComponent) {
+        // todo: convert List<CourseComponent> to String
+        CharSequence[] alternativeTimesArray = new CharSequence[4];
+        for (int i = 0; i < 4; i++) {
+            alternativeTimesArray[i] = ("EDDIE");
+        }
+        return alternativeTimesArray;
+    }
+
     public void onCalendarEventClicked(CourseComponent courseComponent) {
         List<List<CourseComponent>> alternatives;
         try {
@@ -203,6 +220,15 @@ class HomePresenter implements BasePresenter {
             // No other sections that this course can switch into
         } else {
             homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
+        }
+    }
+
+    private String getTypeSpelling(String type) {
+        switch(type) {
+            case "LEC": return "lecture";
+            case "TUT": return "tutorial";
+            case "LAB": return "lab";
+            default: return null;
         }
     }
 }
