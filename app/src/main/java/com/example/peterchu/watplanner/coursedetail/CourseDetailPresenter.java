@@ -56,7 +56,7 @@ class CourseDetailPresenter implements BasePresenter {
                     course,
                     new DataRepository.CourseScheduleCallback() {
                         @Override
-                        public void onCourseScheduleRetrieved(List<CourseComponent> schedules) {
+                        public void onCourseScheduleRetrieved(List<List<CourseComponent>> schedules) {
                             courseDetailFragment.setCourseSchedule(schedules);
                         }
 

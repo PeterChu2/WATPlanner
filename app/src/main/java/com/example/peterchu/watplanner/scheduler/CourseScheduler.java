@@ -1,11 +1,9 @@
 package com.example.peterchu.watplanner.scheduler;
 
-import android.util.Log;
 import android.util.Pair;
 
-import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
-import com.example.peterchu.watplanner.data.DataRepository;
+import com.example.peterchu.watplanner.data.IDataRepository;
 
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
@@ -36,16 +34,26 @@ public class CourseScheduler {
     private static final DateFormat componentDateFormat = new SimpleDateFormat("HH:mm");
 
     private Solver solver;
-    private DataRepository dataRepository;
+    private IDataRepository dataRepository;
+
+    private Map<BoolVar, List<CourseComponent>> boolToGroupedComponents;
     private Map<BoolVar, CourseComponent> boolToComponent;
 
-    private List<CourseComponent> currentSchedule;
+    private List<List<CourseComponent>> currentSchedule;
 
-    public CourseScheduler(DataRepository dataRepository) {
+    public CourseScheduler(IDataRepository dataRepository) {
         this.dataRepository = dataRepository;
         solver = new Solver("Conflict-free Schedules");
+        boolToGroupedComponents = new HashMap<>();
         boolToComponent = new HashMap<>();
         currentSchedule = new ArrayList<>();
+    }
+
+    public void reset() {
+        solver = new Solver("Conflict-free Schedules");
+        boolToGroupedComponents.clear();
+        boolToComponent.clear();
+        currentSchedule.clear();
     }
 
     /**
@@ -54,6 +62,8 @@ public class CourseScheduler {
      * @return true if a conflict-free schedule was found, false otherwise
      */
     public boolean generateSchedules() throws ParseException {
+        reset();
+
         Set<String> courseIds = dataRepository.getUserCourses();
 
         List<List<BoolVar>> totalBools = new ArrayList<>();
@@ -63,10 +73,10 @@ public class CourseScheduler {
             int id = Integer.parseInt(courseId);
 
             // Lists are already sorted
-            List<CourseComponent> lectures = dataRepository.getLectures(id);
-            List<CourseComponent> tutorials = dataRepository.getTutorials(id);
-            List<CourseComponent> labs = dataRepository.getLabs(id);
-            List<CourseComponent> seminars = dataRepository.getSeminars(id);
+            List<List<CourseComponent>> lectures = dataRepository.getLectures(id);
+            List<List<CourseComponent>> tutorials = dataRepository.getTutorials(id);
+            List<List<CourseComponent>> labs = dataRepository.getLabs(id);
+            List<List<CourseComponent>> seminars = dataRepository.getSeminars(id);
 
             List<BoolVar> subTotal = new ArrayList<>();
 
@@ -97,7 +107,7 @@ public class CourseScheduler {
 
         // Look for a conflict-free schedule
         if (solver.findSolution()) {
-            for (Map.Entry<BoolVar, CourseComponent> entry : boolToComponent.entrySet()) {
+            for (Map.Entry<BoolVar, List<CourseComponent>> entry : boolToGroupedComponents.entrySet()) {
                 if (entry.getKey().getValue() == 1) {
                     currentSchedule.add(entry.getValue());
                 }
@@ -108,35 +118,57 @@ public class CourseScheduler {
         }
     }
 
-    public List<CourseComponent> getCurrentSchedule() {
+    public List<List<CourseComponent>> getCurrentSchedule() {
         return currentSchedule;
     }
 
     /**
-     * Adds constraints to the solver
+     * Adds constraints to the solver given a set of components for a SINGLE course.
+     * This method also maps each section BoolVar to its corresponding set of components so that
+     * when the solution is found, we can look up the course components that are part of the
+     * conflict-free schedule.
      */
-    private List<List<BoolVar>> addConstraints(List<CourseComponent> components)
+    private List<List<BoolVar>> addConstraints(List<List<CourseComponent>> components)
             throws ParseException {
-        List<List<BoolVar>> sectionList = getBoolListsBySection(components);
+        List<List<BoolVar>> sectionList = mapCourseComponents(components);
 
         if (sectionList.size() == 1) {
             List<BoolVar> sectionA = sectionList.get(0);
             BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
-            solver.post(and(a));
+            Constraint constraint = and(a);
+            boolToGroupedComponents.put(constraint.reif(), components.get(0));
+            solver.post(constraint);
         } else if (sectionList.size() > 1) {
+            Constraint total = null;
             for (int i = 0; i < sectionList.size() - 1; i++) {
                 List<BoolVar> sectionA = sectionList.get(i);
                 BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
                 Constraint left = and(a);
-                Constraint negLeft = not(or(a));
+                boolToGroupedComponents.put(left.reif(), components.get(i));
                 for (int j = i + 1; j < sectionList.size(); j++) {
                     List<BoolVar> sectionB = sectionList.get(j);
                     BoolVar[] b = sectionB.toArray(new BoolVar[sectionB.size()]);
                     Constraint right = and(b);
-                    Constraint negRight = not(or(b));
-                    solver.post(or(and(left, negRight), and(right, negLeft)));
+
+                    // Build up a constraint that we want at least one section in the solution
+                    if (total == null) {
+                        total = or(left, right);
+                    } else {
+                        total = or(total, or(left, right));
+                    }
+
+                    // We constraint that we cannot have both sections in the solution
+                    solver.post(not(and(left, right)));
+
+                    // Add last grouping
+                    if ((j == sectionList.size() - 1) && (i == j - 1)) {
+                        boolToGroupedComponents.put(right.reif(), components.get(j));
+                    }
                 }
             }
+
+            // Finally post the large OR constraint
+            solver.post(total);
         }
 
         return sectionList;
@@ -146,15 +178,15 @@ public class CourseScheduler {
      * Checks if pairs of course components conflict and generates a conflict pair.
      * Representation stays as BoolVar so the SAT solver can cleanly accept the object.
      */
-    private Set<Pair<BoolVar, BoolVar>> generateConflicts(List<List<BoolVar>> components)
+    private Set<Pair<BoolVar, BoolVar>> generateConflicts(List<List<BoolVar>> allComponents)
             throws ParseException {
         Set<Pair<BoolVar, BoolVar>> conflicts = new HashSet<>();
 
         // First two loops grab components associated with a specific course
-        for (int i = 0; i < components.size() - 1; i++) {
-            List<BoolVar> courseA = components.get(i);
-            for (int j = i + 1; j < components.size(); j++) {
-                List<BoolVar> courseB = components.get(j);
+        for (int i = 0; i < allComponents.size() - 1; i++) {
+            List<BoolVar> courseA = allComponents.get(i);
+            for (int j = i + 1; j < allComponents.size(); j++) {
+                List<BoolVar> courseB = allComponents.get(j);
 
                 // Check for conflicts between two courses
                 for (BoolVar boolA : courseA) {
@@ -190,37 +222,19 @@ public class CourseScheduler {
     }
 
     /**
-     * Groups together course components by section into a list of lists. This is for easier
-     * section by section constraint generation.
-     *
-     * @param components MUST BE FOR A SINGLE COURSE
+     * Maps BoolVars to their respective CourseComponents
      */
-    private List<List<BoolVar>> getBoolListsBySection(List<CourseComponent> components) {
+    private List<List<BoolVar>> mapCourseComponents(List<List<CourseComponent>> componentsList) {
         List<List<BoolVar>> result = new ArrayList<>();
-        if (components.isEmpty()) return result;
-
-        CourseComponent currentComponent = components.get(0);
-        String currentSection = currentComponent.getSection();
-        List<BoolVar> currentList = new ArrayList<>();
-        BoolVar currentVar = VariableFactory.bool(currentComponent.toString(), solver);
-        boolToComponent.put(currentVar, currentComponent);
-        currentList.add(currentVar);
-
-        for (int i = 1; i < components.size(); i++) {
-            currentComponent = components.get(i);
-            if (!currentSection.equals(currentComponent.getSection())) {
-                currentSection = currentComponent.getSection();
-                result.add(currentList);
-                currentList = new ArrayList<>();
+        for (List<CourseComponent> components : componentsList) {
+            List<BoolVar> boolVars = new ArrayList<>();
+            for (CourseComponent component : components) {
+                BoolVar boolVar = VariableFactory.bool(component.toString(), solver);
+                boolVars.add(boolVar);
+                boolToComponent.put(boolVar, component);
             }
-
-            currentVar = VariableFactory.bool(currentComponent.toString(), solver);
-            boolToComponent.put(currentVar, currentComponent);
-            currentList.add(currentVar);
+            result.add(boolVars);
         }
-
-        if (!currentList.isEmpty()) result.add(currentList);
         return result;
     }
-
 }

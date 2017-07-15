@@ -59,7 +59,9 @@ public class CourseComponent {
 
     private String term;
 
-    public String getType() { return type; }
+    public String getType() {
+        return type;
+    }
 
     public void setType(String type) {
         this.type = type;
@@ -165,7 +167,9 @@ public class CourseComponent {
         return day;
     }
 
-    public String getTerm() { return term; }
+    public String getTerm() {
+        return term;
+    }
 
     public void setDay(String day) {
         this.day = day;
@@ -216,7 +220,14 @@ public class CourseComponent {
     }
 
     public String toString() {
-        return String.format("%s %s - %s %s - %s %s~%s", subject, catalogNumber, type, section, day, startTime, endTime);
+        return String.format("%s %s - %s %s - %s %s~%s",
+                subject,
+                catalogNumber,
+                type,
+                section,
+                day,
+                startTime,
+                endTime);
     }
 
     private Calendar getTermStartDate() {
@@ -252,10 +263,8 @@ public class CourseComponent {
     }
 
     public List<WeekViewEvent> toWeekViewEvents(int month) {
-        List<WeekViewEvent> weekViewEvents = new ArrayList<WeekViewEvent>();
+        List<WeekViewEvent> weekViewEvents = new ArrayList<>();
         try {
-            String eventName = String.format("%s %s %s", subject, catalogNumber, type);
-
             Calendar date = Calendar.getInstance();
             date.set(Calendar.MONTH, month);
             date.set(Calendar.YEAR, 2017);
@@ -264,7 +273,7 @@ public class CourseComponent {
             Integer dayOfWeek = this.getDayOfWeek();
             // hack for current term - should update with term month data at some point
             if (dayOfWeek == null || (month < Calendar.MAY) || (month > Calendar.AUGUST)) {
-                return new ArrayList<WeekViewEvent>();
+                return new ArrayList<>();
             }
             while (date.get(Calendar.MONTH) == month) {
                 Calendar eventStartDate = this.getCalendarStartTime();
@@ -281,15 +290,15 @@ public class CourseComponent {
 
                     event.setStartTime(eventStartDate);
                     event.setEndTime(eventEndDate);
-                    event.setLocation(location.toString());
-                    event.setName(eventName);
+                    event.setLocation(String.format("%s %s", type, section));
+                    event.setName(String.format("%s %s", subject, catalogNumber));
                     weekViewEvents.add(event);
                 }
                 date.add(Calendar.DATE, 1);
             }
 
         } catch (Exception ParseException) {
-            return new ArrayList<WeekViewEvent>();
+            return new ArrayList<>();
         }
 
         return weekViewEvents;

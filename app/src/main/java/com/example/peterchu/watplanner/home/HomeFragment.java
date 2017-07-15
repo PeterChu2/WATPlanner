@@ -4,11 +4,11 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -36,6 +36,7 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,7 +49,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     CourseListAdapter courseAdapter;
     MaterialSearchView searchView;
     WeekView weekView;
-    List<CourseComponent> mCourseSchedule;
+    List<List<CourseComponent>> mCourseSchedule;
 
 
     @Override
@@ -60,6 +61,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mCourseSchedule = new ArrayList<>();
         courseAdapter = new CourseListAdapter(getContext(),
                 R.layout.course_list_item_view,
                 new ArrayList<Course>(),
@@ -89,6 +91,48 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         });
 
         weekView = (WeekView) root.findViewById(R.id.weekViewHome);
+        // The week view has infinite scrolling horizontally. We have to provide the events of a
+        // month every time the month changes on the week view.
+        weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
+            @Override
+            public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+                List<WeekViewEvent> events = new ArrayList<>();
+                // Color each section and type a different color and add to view
+                Random rnd = new Random();
+                for (List<CourseComponent> components : mCourseSchedule) {
+                    int color = Color.argb(255,
+                            rnd.nextInt(256),
+                            rnd.nextInt(256),
+                            rnd.nextInt(256));
+                    for (CourseComponent c : components) {
+                        for (WeekViewEvent event : c.toWeekViewEvents(newMonth)) {
+                            event.setColor(color);
+                            events.add(event);
+                        }
+                    }
+                }
+                return events;
+            }
+        });
+
+        // Set an action when any event is clicked.
+        weekView.setOnEventClickListener(new WeekView.EventClickListener() {
+            @Override
+            public void onEventClick(WeekViewEvent event, RectF eventRect) {
+                CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
+                // todo: get List<CourseComponent>
+                ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
+                        HomeFragment.this.getContext(), courseComponent
+                );
+                Dialog d = new Dialog(HomeFragment.this.getContext());
+                d.setContentView(alternateSlotView);
+                d.show();
+            }
+        });
+
+        weekView.setFirstDayOfWeek(Calendar.MONDAY);
+        weekView.setShowNowLine(false);
+        weekView.goToHour(8);
 
         searchView = (MaterialSearchView) getActivity()
                 .findViewById(R.id.search_view);
@@ -168,16 +212,18 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         builder.show();
     }
 
-    public void addCourses(List<Course> courses) {
+    public void addCourseCards(List<Course> courses) {
         courseAdapter.addAll(courses);
         courseAdapter.notifyDataSetChanged();
     }
 
-    public void removeCourse(Course course) {
+    public void removeCourseCard(Course course) {
         courseAdapter.remove(course);
         courseAdapter.notifyDataSetChanged();
-        weekView.notifyDatasetChanged();
-        Snackbar.make(getActivity().findViewById(R.id.container), "Course removed", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(getActivity().findViewById(R.id.container),
+                "Course removed",
+                Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     protected void addSearchSuggestions(List<Course> courses) {
@@ -200,39 +246,9 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         return true;
     }
 
-    public void setCourseSchedule(List<CourseComponent> courseSchedule) {
+    public void setCourseSchedule(List<List<CourseComponent>> courseSchedule) {
         mCourseSchedule = courseSchedule;
-        // The week view has infinite scrolling horizontally. We have to provide the events of a
-        // month every time the month changes on the week view.
-        weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
-            @Override
-            public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-                List<WeekViewEvent> events = new ArrayList<>();
-                for (CourseComponent c : mCourseSchedule) {
-                    events.addAll(c.toWeekViewEvents(newMonth));
-                }
-                return events;
-            }
-        });
-
-        // Set an action when any event is clicked.
-        weekView.setOnEventClickListener(new WeekView.EventClickListener() {
-            @Override
-            public void onEventClick(WeekViewEvent event, RectF eventRect) {
-                CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
-                // todo: get List<CourseComponent>
-                ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
-                        HomeFragment.this.getContext(), courseComponent
-                );
-                Dialog d = new Dialog(HomeFragment.this.getContext());
-                d.setContentView(alternateSlotView);
-                d.show();
-            }
-        });
-
-        weekView.setFirstDayOfWeek(Calendar.MONDAY);
-        weekView.setShowNowLine(false);
-        weekView.goToHour(8);
+        weekView.notifyDatasetChanged();
     }
 
     public void emptyCourseList() {
