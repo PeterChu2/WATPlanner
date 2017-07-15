@@ -62,6 +62,8 @@ public class CourseScheduler {
      * @return true if a conflict-free schedule was found, false otherwise
      */
     public boolean generateSchedules() throws ParseException {
+        reset();
+
         Set<String> courseIds = dataRepository.getUserCourses();
 
         List<List<BoolVar>> totalBools = new ArrayList<>();

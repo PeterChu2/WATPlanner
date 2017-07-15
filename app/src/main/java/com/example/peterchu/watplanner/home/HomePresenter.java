@@ -1,7 +1,6 @@
 package com.example.peterchu.watplanner.home;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -22,7 +21,6 @@ import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -80,7 +78,7 @@ class HomePresenter implements BasePresenter {
 
     public void onCourseRemoved(Course course) {
         dataRepository.removeUserCourse(course.getId());
-        homeFragment.removeCourse(course);
+        homeFragment.removeCourseCard(course);
         scheduler.reset();
         generateScheduleForCalendar(); // refresh calendar.
     }
@@ -155,13 +153,14 @@ class HomePresenter implements BasePresenter {
      * Tells the View to display user's saved course in the list as cards
      */
     private void loadCourseCards() {
+        homeFragment.emptyCourseList();
+
         // Load user's saved courses into the list
         final Set<String> savedCourses = dataRepository.getUserCourses();
         if (!savedCourses.isEmpty()) {
             List<Course> courses = dataRepository.getCourses(
                     savedCourses.toArray(new String[savedCourses.size()]));
-            homeFragment.emptyCourseList();
-            homeFragment.addCourses(courses);
+            homeFragment.addCourseCards(courses);
         }
     }
 }
