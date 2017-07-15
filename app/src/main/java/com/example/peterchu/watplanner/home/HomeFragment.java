@@ -224,7 +224,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
                 ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
                         HomeFragment.this.getContext(), courseComponent
                 );
-                final Dialog d = new Dialog(HomeFragment.this.getContext());
+                Dialog d = new Dialog(HomeFragment.this.getContext());
                 d.setContentView(alternateSlotView);
                 d.show();
             }

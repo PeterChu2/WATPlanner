@@ -21,6 +21,6 @@
     <string name="course_detail_enrolment_capacity">Capacity: %1$s/%2$s</string>
 
     <string name="calendar_title_home">Your conflict-free schedule</string>
-    <string name="calendar_title_hint">Hint: tap on a courses to edit!</string>
+    <string name="calendar_title_hint">Hint: tap on a courses to edit</string>
 
 </resources>
