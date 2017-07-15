@@ -178,7 +178,7 @@ class HomePresenter implements BasePresenter {
         if (alternatives.size() == 0) {
             // No other sections that this course can switch into
         } else {
-            // TODO: Process alternatives into dialog
+            homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
         }
     }
 }

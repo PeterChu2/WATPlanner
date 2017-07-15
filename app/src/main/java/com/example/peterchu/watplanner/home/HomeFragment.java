@@ -107,13 +107,6 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             public void onEventClick(WeekViewEvent event, RectF eventRect) {
                 CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
                 homePresenter.onCalendarEventClicked(courseComponent);
-                // todo: get List<CourseComponent>
-                ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
-                        HomeFragment.this.getContext(), courseComponent
-                );
-                Dialog d = new Dialog(HomeFragment.this.getContext());
-                d.setContentView(alternateSlotView);
-                d.show();
             }
         });
 
@@ -240,5 +233,16 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     public void emptyCourseList() {
         this.courseAdapter.clear();
+    }
+
+    public void showConflictFreeAlternativesDialog(
+            CourseComponent course,
+            List<List<CourseComponent>> alternatives) {
+        ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
+                HomeFragment.this.getContext(),
+                course);
+        Dialog d = new Dialog(HomeFragment.this.getContext());
+        d.setContentView(alternateSlotView);
+        d.show();
     }
 }
