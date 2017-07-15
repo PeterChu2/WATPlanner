@@ -7,6 +7,9 @@ import com.example.peterchu.watplanner.data.IDataRepository;
 
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
+import org.chocosolver.solver.exception.ContradictionException;
+import org.chocosolver.solver.search.solution.AllSolutionsRecorder;
+import org.chocosolver.solver.search.solution.Solution;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
@@ -36,23 +39,28 @@ public class CourseScheduler {
     private Solver solver;
     private IDataRepository dataRepository;
 
-    private Map<BoolVar, List<CourseComponent>> boolToGroupedComponents;
-    private Map<BoolVar, CourseComponent> boolToComponent;
+    private Map<BoolVar, List<CourseComponent>> sectionMap;
+    private Map<BoolVar, CourseComponent> courseMap;
 
     private List<List<CourseComponent>> currentSchedule;
 
     public CourseScheduler(IDataRepository dataRepository) {
         this.dataRepository = dataRepository;
         solver = new Solver("Conflict-free Schedules");
-        boolToGroupedComponents = new HashMap<>();
-        boolToComponent = new HashMap<>();
+        solver.set(new AllSolutionsRecorder(solver));
+        sectionMap = new HashMap<>();
+        courseMap = new HashMap<>();
         currentSchedule = new ArrayList<>();
     }
 
+    /**
+     * This resets the scheduler to a fresh state.
+     */
     public void reset() {
         solver = new Solver("Conflict-free Schedules");
-        boolToGroupedComponents.clear();
-        boolToComponent.clear();
+        solver.set(new AllSolutionsRecorder(solver));
+        sectionMap.clear();
+        courseMap.clear();
         currentSchedule.clear();
     }
 
@@ -61,7 +69,7 @@ public class CourseScheduler {
      *
      * @return true if a conflict-free schedule was found, false otherwise
      */
-    public boolean generateSchedules() throws ParseException {
+    public boolean generateSchedules() throws ParseException, ContradictionException {
         reset();
 
         Set<String> courseIds = dataRepository.getUserCourses();
@@ -106,8 +114,12 @@ public class CourseScheduler {
         }
 
         // Look for a conflict-free schedule
-        if (solver.findSolution()) {
-            for (Map.Entry<BoolVar, List<CourseComponent>> entry : boolToGroupedComponents.entrySet()) {
+        if (solver.findAllSolutions() > 0) {
+            Solution solution = solver.getSolutionRecorder().getLastSolution();
+            solver.getSearchLoop().restoreRootNode();
+            solver.getEnvironment().worldPush();
+            solution.restore(solver);
+            for (Map.Entry<BoolVar, List<CourseComponent>> entry : sectionMap.entrySet()) {
                 if (entry.getKey().getValue() == 1) {
                     currentSchedule.add(entry.getValue());
                 }
@@ -120,6 +132,39 @@ public class CourseScheduler {
 
     public List<List<CourseComponent>> getCurrentSchedule() {
         return currentSchedule;
+    }
+
+    /**
+     * Given a course component, this will determine what other section that the component can
+     * switch into and still maintain a conflict-free schedule.
+     */
+    public List<List<CourseComponent>> getAlternateSections(CourseComponent component)
+            throws ContradictionException {
+        List<List<CourseComponent>> ret = new ArrayList<>();
+        for (Solution solution : solver.getSolutionRecorder().getSolutions()) {
+            solver.getSearchLoop().restoreRootNode();
+            solver.getEnvironment().worldPush();
+            solution.restore(solver);
+            for (Map.Entry<BoolVar, List<CourseComponent>> entry : sectionMap.entrySet()) {
+                List<CourseComponent> c = entry.getValue();
+                if (entry.getKey().getValue() == 1
+                        && isSameCourse(component, c.get(0))
+                        && !component.getSection().equals(c.get(0).getSection())) {
+                    ret.add(c);
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Checks two course component's subject, catalog number, and type to determine if components
+     * are for the same course.
+     */
+    private boolean isSameCourse(CourseComponent a, CourseComponent b) {
+        return a.getSubject().equals(b.getSubject())
+                && a.getCatalogNumber().equals(b.getCatalogNumber())
+                && a.getType().equals(b.getType());
     }
 
     /**
@@ -136,7 +181,7 @@ public class CourseScheduler {
             List<BoolVar> sectionA = sectionList.get(0);
             BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
             Constraint constraint = and(a);
-            boolToGroupedComponents.put(constraint.reif(), components.get(0));
+            sectionMap.put(constraint.reif(), components.get(0));
             solver.post(constraint);
         } else if (sectionList.size() > 1) {
             Constraint total = null;
@@ -144,7 +189,8 @@ public class CourseScheduler {
                 List<BoolVar> sectionA = sectionList.get(i);
                 BoolVar[] a = sectionA.toArray(new BoolVar[sectionA.size()]);
                 Constraint left = and(a);
-                boolToGroupedComponents.put(left.reif(), components.get(i));
+                solver.post(xor(left, not(or(a))));
+                sectionMap.put(left.reif(), components.get(i));
                 for (int j = i + 1; j < sectionList.size(); j++) {
                     List<BoolVar> sectionB = sectionList.get(j);
                     BoolVar[] b = sectionB.toArray(new BoolVar[sectionB.size()]);
@@ -162,7 +208,8 @@ public class CourseScheduler {
 
                     // Add last grouping
                     if ((j == sectionList.size() - 1) && (i == j - 1)) {
-                        boolToGroupedComponents.put(right.reif(), components.get(j));
+                        sectionMap.put(right.reif(), components.get(j));
+                        solver.post(xor(right, not(or(b))));
                     }
                 }
             }
@@ -190,9 +237,9 @@ public class CourseScheduler {
 
                 // Check for conflicts between two courses
                 for (BoolVar boolA : courseA) {
-                    CourseComponent classA = boolToComponent.get(boolA);
+                    CourseComponent classA = courseMap.get(boolA);
                     for (BoolVar boolB : courseB) {
-                        CourseComponent classB = boolToComponent.get(boolB);
+                        CourseComponent classB = courseMap.get(boolB);
                         if (hasConflict(classA, classB)) {
                             conflicts.add(new Pair<>(boolA, boolB));
                         }
@@ -231,10 +278,14 @@ public class CourseScheduler {
             for (CourseComponent component : components) {
                 BoolVar boolVar = VariableFactory.bool(component.toString(), solver);
                 boolVars.add(boolVar);
-                boolToComponent.put(boolVar, component);
+                courseMap.put(boolVar, component);
             }
             result.add(boolVars);
         }
         return result;
+    }
+
+    private Constraint xor(Constraint left, Constraint right) {
+        return and(or(left, right), not(and(left, right)));
     }
 }

@@ -29,6 +29,7 @@ import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
+import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -94,19 +95,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
             @Override
             public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-                List<WeekViewEvent> events = new ArrayList<>();
-                // Color each section and type a different color and add to view
-                Random rnd = new Random();
-                for (List<CourseComponent> components : mCourseSchedule) {
-                    int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-                    for (CourseComponent c : components) {
-                        for (WeekViewEvent event : c.toWeekViewEvents(newMonth)) {
-                            event.setColor(color);
-                            events.add(event);
-                        }
-                    }
-                }
-                return events;
+                return ScheduleUtils.getWeekViewEvents(mCourseSchedule, newMonth);
             }
         });
 

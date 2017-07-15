@@ -31,6 +31,7 @@ import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
 import com.example.peterchu.watplanner.coursedetail.ConflictResolveItemView;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
+import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
@@ -96,22 +97,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
             @Override
             public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-                List<WeekViewEvent> events = new ArrayList<>();
-                // Color each section and type a different color and add to view
-                Random rnd = new Random();
-                for (List<CourseComponent> components : mCourseSchedule) {
-                    int color = Color.argb(255,
-                            rnd.nextInt(256),
-                            rnd.nextInt(256),
-                            rnd.nextInt(256));
-                    for (CourseComponent c : components) {
-                        for (WeekViewEvent event : c.toWeekViewEvents(newMonth)) {
-                            event.setColor(color);
-                            events.add(event);
-                        }
-                    }
-                }
-                return events;
+                return ScheduleUtils.getWeekViewEvents(mCourseSchedule, newMonth);
             }
         });
 
@@ -120,13 +106,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             @Override
             public void onEventClick(WeekViewEvent event, RectF eventRect) {
                 CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
-                // todo: get List<CourseComponent>
-                ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
-                        HomeFragment.this.getContext(), courseComponent
-                );
-                Dialog d = new Dialog(HomeFragment.this.getContext());
-                d.setContentView(alternateSlotView);
-                d.show();
+                homePresenter.onCalendarEventClicked(courseComponent);
             }
         });
 
@@ -253,5 +233,16 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     public void emptyCourseList() {
         this.courseAdapter.clear();
+    }
+
+    public void showConflictFreeAlternativesDialog(
+            CourseComponent course,
+            List<List<CourseComponent>> alternatives) {
+        ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
+                HomeFragment.this.getContext(),
+                course);
+        Dialog d = new Dialog(HomeFragment.this.getContext());
+        d.setContentView(alternateSlotView);
+        d.show();
     }
 }
