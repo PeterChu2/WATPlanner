@@ -20,6 +20,8 @@ import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
+import org.chocosolver.solver.exception.ContradictionException;
+
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
@@ -69,7 +71,7 @@ class HomePresenter implements BasePresenter {
                 // The application should never enter this state, throw RTE
                 throw new IllegalStateException("No conflict-free schedule generated!");
             }
-        } catch (ParseException e) {
+        } catch (Exception e) {
             Log.e("HomePresenter", "Failed to generate schedule: " + e);
             return;
         }
@@ -161,6 +163,22 @@ class HomePresenter implements BasePresenter {
             List<Course> courses = dataRepository.getCourses(
                     savedCourses.toArray(new String[savedCourses.size()]));
             homeFragment.addCourseCards(courses);
+        }
+    }
+
+    public void onCalendarEventClicked(CourseComponent courseComponent) {
+        List<List<CourseComponent>> alternatives;
+        try {
+            alternatives = scheduler.getAlternateSections(courseComponent);
+        } catch (ContradictionException e) {
+            Log.e("HomePresenter", "Failed to get alternate slots!");
+            return;
+        }
+
+        if (alternatives.size() == 0) {
+            // No other sections that this course can switch into
+        } else {
+            // TODO: Process alternatives into dialog
         }
     }
 }
