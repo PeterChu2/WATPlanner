@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import android.app.Dialog;
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -32,6 +33,7 @@ import com.example.peterchu.watplanner.R;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 
 /**
  * A fragment representing a single Course detail screen.
@@ -40,7 +42,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public static final String ARG_COURSE_ID = "course_id";
 
-    private List<CourseComponent> mCourseSchedule;
+    private List<List<CourseComponent>> mCourseSchedule;
     private CourseDetailPresenter presenter;
 
     private View rootView;
@@ -85,7 +87,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
                 courseDetails.getAntirequisites());
     }
 
-    public void setCourseSchedule(List<CourseComponent> courseSchedule) {
+    public void setCourseSchedule(List<List<CourseComponent>> courseSchedule) {
         mCourseSchedule = courseSchedule;
         // The week view has infinite scrolling horizontally. We have to provide the events of a
         // month every time the month changes on the week view.
@@ -93,8 +95,16 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
             @Override
             public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
                 List<WeekViewEvent> events = new ArrayList<>();
-                for (CourseComponent c : mCourseSchedule) {
-                    events.addAll(c.toWeekViewEvents(newMonth));
+                // Color each section and type a different color and add to view
+                Random rnd = new Random();
+                for (List<CourseComponent> components : mCourseSchedule) {
+                    int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+                    for (CourseComponent c : components) {
+                        for (WeekViewEvent event : c.toWeekViewEvents(newMonth)) {
+                            event.setColor(color);
+                            events.add(event);
+                        }
+                    }
                 }
                 return events;
             }

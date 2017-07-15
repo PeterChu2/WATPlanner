@@ -252,9 +252,9 @@ public class CourseComponent {
     }
 
     public List<WeekViewEvent> toWeekViewEvents(int month) {
-        List<WeekViewEvent> weekViewEvents = new ArrayList<WeekViewEvent>();
+        List<WeekViewEvent> weekViewEvents = new ArrayList<>();
         try {
-            String eventName = String.format("%s %s %s", subject, catalogNumber, type);
+            String eventName = String.format("%s %s", subject, catalogNumber);
 
             Calendar date = Calendar.getInstance();
             date.set(Calendar.MONTH, month);
@@ -281,7 +281,7 @@ public class CourseComponent {
 
                     event.setStartTime(eventStartDate);
                     event.setEndTime(eventEndDate);
-                    event.setLocation(location.toString());
+                    event.setLocation(type);
                     event.setName(eventName);
                     weekViewEvents.add(event);
                 }
@@ -289,7 +289,7 @@ public class CourseComponent {
             }
 
         } catch (Exception ParseException) {
-            return new ArrayList<WeekViewEvent>();
+            return new ArrayList<>();
         }
 
         return weekViewEvents;

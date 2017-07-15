@@ -312,22 +312,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
-    public List<CourseComponent> getCourseComponents(int courseId, String type) {
-        List<CourseComponent> ret = new ArrayList<>();
+    /**
+     * Returns the course components of the passed in type for a course id.
+     * @return A list of lists contaning course components grouped by section
+     */
+    public List<List<CourseComponent>> getCourseComponentsBySection(int courseId, String type) {
+        List<List<CourseComponent>> ret = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_COURSE_ID + "=" + courseId + " AND " + KEY_TYPE + "='" + type + "'";
+        String query = "SELECT * FROM " + TABLE_SCHEDULES
+                + " WHERE " + KEY_COURSE_ID + "=" + courseId
+                + " AND " + KEY_TYPE + "='" + type + "'";
         Cursor cursor = db.rawQuery(query, null);
         Log.d("GET_LECTURES", "GETTING LECTURES");
 
-        if (cursor.moveToFirst()) {
-            do {
-                CourseComponent courseComponent = makeCourseComponent(cursor);
-                ret.add(courseComponent);
-                Log.d("    GET_LECTURES", courseComponent.toString());
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-
+        groupBySection(cursor, ret);
         return ret;
     }
 
@@ -493,25 +491,36 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return ret;
     }
 
-    public List<CourseComponent> getCourseSchedule(String subject, String catalogNumber) {
+    public List<List<CourseComponent>> getCourseSchedule(String subject, String catalogNumber) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        List<CourseComponent> ret = new ArrayList<>();
+        List<List<CourseComponent>> ret = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_SUBJECT + "=\"" + subject
                 + "\" AND " + KEY_NUMBER + "=\"" + catalogNumber + "\"";
         Cursor cursor = db.rawQuery(selectQuery, null);
 
+        groupBySection(cursor, ret);
+        return ret;
+    }
+
+    private void groupBySection(Cursor cursor, List<List<CourseComponent>> list) {
+        List<CourseComponent> currentList = new ArrayList<>();
+        String currentSection = null;
         if (cursor.moveToFirst()) {
-            Log.d("DBHandler", "Making schedules list...");
             do {
                 CourseComponent courseComponent = makeCourseComponent(cursor);
-                ret.add(courseComponent);
+                if (currentList.size() > 0
+                        && !courseComponent.getSection().equals(currentSection)) {
+                    list.add(currentList);
+                    currentList = new ArrayList<>();
+                }
+                currentSection = courseComponent.getSection();
+                currentList.add(courseComponent);
             } while (cursor.moveToNext());
+            if (currentList.size() > 0) list.add(currentList);
         }
         cursor.close();
-
-        return ret;
     }
 
     public Course getCourseByCourseCode(String subject, String catalogNumber) {

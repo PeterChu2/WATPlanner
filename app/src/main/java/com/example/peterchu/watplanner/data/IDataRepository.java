@@ -41,13 +41,13 @@ public interface IDataRepository {
                                         final DataRepository.CourseScheduleCallback callback,
                                         final Activity activity);
 
-    public List<CourseComponent> getLectures(int courseId);
+    public List<List<CourseComponent>> getLectures(int courseId);
 
-    public List<CourseComponent> getSeminars(int courseId);
+    public List<List<CourseComponent>> getSeminars(int courseId);
 
-    public List<CourseComponent> getLabs(int courseId);
+    public List<List<CourseComponent>> getLabs(int courseId);
 
-    public List<CourseComponent> getTutorials(int courseId);
+    public List<List<CourseComponent>> getTutorials(int courseId);
 
     /**
      * Fetches in-depth details of a course

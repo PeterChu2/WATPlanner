@@ -116,8 +116,11 @@ public class DataRepository implements IDataRepository {
     }
 
     @Override
-    public void findOrGetCourseSchedule(final Course course, final CourseScheduleCallback callback, final Activity activity) {
-        List<CourseComponent> components = databaseHandler.getCourseSchedule(course.getSubject(), course.getNumber());
+    public void findOrGetCourseSchedule(final Course course,
+                                        final CourseScheduleCallback callback,
+                                        final Activity activity) {
+        List<List<CourseComponent>> components =
+                databaseHandler.getCourseSchedule(course.getSubject(), course.getNumber());
         Log.d("FIND OR GET", ""+components.size());
         if (components.size() > 0) {
             callback.onCourseScheduleRetrieved(components);
@@ -138,7 +141,11 @@ public class DataRepository implements IDataRepository {
                                 activity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        List<CourseComponent> components = dbHandler.getCourseSchedule(course.getSubject(), course.getNumber());
+                                        List<List<CourseComponent>> components =
+                                                dbHandler.getCourseSchedule(
+                                                        course.getSubject(),
+                                                        course.getNumber());
+
                                         callback.onCourseScheduleRetrieved(components);
                                         Log.d("FIND OR GET", ""+components.size());
                                     }
@@ -162,23 +169,23 @@ public class DataRepository implements IDataRepository {
     }
 
     @Override
-    public List<CourseComponent> getLectures(int courseId) {
-        return databaseHandler.getCourseComponents(courseId, Constants.LEC);
+    public List<List<CourseComponent>> getLectures(int courseId) {
+        return databaseHandler.getCourseComponentsBySection(courseId, Constants.LEC);
     }
 
     @Override
-    public List<CourseComponent> getSeminars(int courseId) {
-        return databaseHandler.getCourseComponents(courseId, Constants.SEM);
+    public List<List<CourseComponent>> getSeminars(int courseId) {
+        return databaseHandler.getCourseComponentsBySection(courseId, Constants.SEM);
     }
 
     @Override
-    public List<CourseComponent> getLabs(int courseId) {
-        return databaseHandler.getCourseComponents(courseId, Constants.LAB);
+    public List<List<CourseComponent>> getLabs(int courseId) {
+        return databaseHandler.getCourseComponentsBySection(courseId, Constants.LAB);
     }
 
     @Override
-    public List<CourseComponent> getTutorials(int courseId) {
-        return databaseHandler.getCourseComponents(courseId, Constants.TUT);
+    public List<List<CourseComponent>> getTutorials(int courseId) {
+        return databaseHandler.getCourseComponentsBySection(courseId, Constants.TUT);
     }
 
     @Override
@@ -236,7 +243,7 @@ public class DataRepository implements IDataRepository {
     }
 
     public interface CourseScheduleCallback {
-        void onCourseScheduleRetrieved(List<CourseComponent> schedules);
+        void onCourseScheduleRetrieved(List<List<CourseComponent>> schedules);
 
         void onFailure();
     }

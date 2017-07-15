@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BasePresenter;
@@ -18,7 +19,9 @@ import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
+import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -29,14 +32,14 @@ class HomePresenter implements BasePresenter {
 
     private HomeFragment homeFragment;
     private IDataRepository dataRepository;
-    private Activity activity;
+    private CourseScheduler scheduler;
 
     public HomePresenter(HomeFragment homeFragment,
                          IDataRepository dataRepository,
                          Activity activity) {
         this.homeFragment = homeFragment;
         this.dataRepository = dataRepository;
-        this.activity = activity;
+        scheduler = new CourseScheduler(dataRepository);
         homeFragment.setPresenter(this);
     }
 
@@ -46,8 +49,8 @@ class HomePresenter implements BasePresenter {
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
             @Override
             public void onDataSynced() {
-                // todo: load non-conflicting courses!
-                configureSchedule(getSavedCourses());
+                getSavedCourses();
+                generateScheduleForCalendar();
             }
 
             @Override
@@ -57,35 +60,20 @@ class HomePresenter implements BasePresenter {
         });
     }
 
-    private void configureSchedule(List<Course> courses) {
-        if (courses == null || courses.size() == 0) {
-            homeFragment.setCourseSchedule(new ArrayList<CourseComponent>());
+    private void generateScheduleForCalendar() {
+        try {
+            scheduler.generateSchedules();
+        } catch (ParseException e) {
+            Log.e("HomePresenter", "Failed to generate schedule: " + e);
             return;
         }
-
-        for (Course course : courses) {
-            dataRepository.findOrGetCourseSchedule(
-                    course,
-                    new DataRepository.CourseScheduleCallback() {
-                        @Override
-                        public void onCourseScheduleRetrieved(List<CourseComponent> schedules) {
-                            homeFragment.setCourseSchedule(schedules);
-                        }
-
-                        @Override
-                        public void onFailure() {
-                            // do nothing.
-                        }
-                    },
-                    this.activity
-            );
-        }
+        homeFragment.setCourseSchedule(scheduler.getCurrentSchedule());
     }
 
     public void onCourseRemoved(Course course) {
         dataRepository.removeUserCourse(course.getId());
         homeFragment.removeCourse(course);
-        configureSchedule(getSavedCourses()); // refresh calendar.
+        generateScheduleForCalendar(); // refresh calendar.
     }
 
     public void onSearchOpened() {
