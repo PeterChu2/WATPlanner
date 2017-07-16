@@ -39,10 +39,16 @@ public class CourseScheduler {
     private Solver solver;
     private IDataRepository dataRepository;
 
+    // The BoolVar is the AND of all the CourseComponents it maps to
     private Map<BoolVar, List<CourseComponent>> sectionMap;
+
+    // The BoolVar is the individual CourseComponent it maps to
     private Map<BoolVar, CourseComponent> courseMap;
 
     private List<List<CourseComponent>> currentSchedule;
+
+    // Additional constraints
+    private Set<List<CourseComponent>> additionalConstraints;
 
     public CourseScheduler(IDataRepository dataRepository) {
         this.dataRepository = dataRepository;
@@ -51,6 +57,7 @@ public class CourseScheduler {
         sectionMap = new HashMap<>();
         courseMap = new HashMap<>();
         currentSchedule = new ArrayList<>();
+        additionalConstraints = new HashSet<>();
     }
 
     /**
@@ -64,6 +71,60 @@ public class CourseScheduler {
         currentSchedule.clear();
     }
 
+    private void addUserCourseConstraints() throws ParseException {
+        Set<String> courseIds = dataRepository.getUserCourses();
+
+        // Set constraints for each course
+        for (String courseId : courseIds) {
+            addCourseConstraint(Integer.parseInt(courseId));
+        }
+
+        addConflictConstraints();
+    }
+
+    private void addCourseConstraint(int courseId) throws ParseException {
+        // Lists are already sorted
+        List<List<CourseComponent>> lectures = dataRepository.getLectures(courseId);
+        List<List<CourseComponent>> tutorials = dataRepository.getTutorials(courseId);
+        List<List<CourseComponent>> labs = dataRepository.getLabs(courseId);
+        List<List<CourseComponent>> seminars = dataRepository.getSeminars(courseId);
+
+        if (lectures.size() > 0) {
+            addConstraints(lectures);
+        }
+
+        if (tutorials.size() > 0) {
+            addConstraints(tutorials);
+        }
+
+        if (labs.size() > 0) {
+            addConstraints(labs);
+        }
+
+        if (seminars.size() > 0) {
+            addConstraints(seminars);
+        }
+    }
+
+    /**
+     * Used to tell the scheduler to have a specific course constrained to a specific section.
+     * Applies for a specific type only (LEC, TUT, LAB, etc.)
+     */
+    public void setCourseSectionConstraint(List<CourseComponent> newSection) {
+        // For now, we only allow 1 constraint. There are plans to expand this in the future.
+        additionalConstraints.clear();
+        additionalConstraints.add(newSection);
+    }
+
+    private void addConflictConstraints() throws ParseException {
+        // Look for conflicts and tell solver to not include those conflicting pairs in solution
+        List<BoolVar> allVars = new ArrayList<>(courseMap.keySet());
+        Set<Pair<BoolVar, BoolVar>> conflicts = generateConflicts(allVars);
+        for (Pair<BoolVar, BoolVar> conflict : conflicts) {
+            solver.post(not(and(conflict.first, conflict.second)));
+        }
+    }
+
     /**
      * The core function of this class that attempts to generate conflict-free schedules
      *
@@ -72,46 +133,7 @@ public class CourseScheduler {
     public boolean generateSchedules() throws ParseException, ContradictionException {
         reset();
 
-        Set<String> courseIds = dataRepository.getUserCourses();
-
-        List<List<BoolVar>> totalBools = new ArrayList<>();
-
-        // Set constraints for each course
-        for (String courseId : courseIds) {
-            int id = Integer.parseInt(courseId);
-
-            // Lists are already sorted
-            List<List<CourseComponent>> lectures = dataRepository.getLectures(id);
-            List<List<CourseComponent>> tutorials = dataRepository.getTutorials(id);
-            List<List<CourseComponent>> labs = dataRepository.getLabs(id);
-            List<List<CourseComponent>> seminars = dataRepository.getSeminars(id);
-
-            List<BoolVar> subTotal = new ArrayList<>();
-
-            if (lectures.size() > 0) {
-                for (List<BoolVar> subList : addConstraints(lectures)) subTotal.addAll(subList);
-            }
-
-            if (tutorials.size() > 0) {
-                for (List<BoolVar> subList : addConstraints(tutorials)) subTotal.addAll(subList);
-            }
-
-            if (labs.size() > 0) {
-                for (List<BoolVar> subList : addConstraints(labs)) subTotal.addAll(subList);
-            }
-
-            if (seminars.size() > 0) {
-                for (List<BoolVar> subList : addConstraints(seminars)) subTotal.addAll(subList);
-            }
-
-            totalBools.add(subTotal);
-        }
-
-        // Look for conflicts and tell solver to not include those conflicting pairs in solution
-        Set<Pair<BoolVar, BoolVar>> conflicts = generateConflicts(totalBools);
-        for (Pair<BoolVar, BoolVar> conflict : conflicts) {
-            solver.post(not(and(conflict.first, conflict.second)));
-        }
+        addUserCourseConstraints();
 
         // Look for a conflict-free schedule
         if (solver.findAllSolutions() > 0) {
@@ -174,9 +196,13 @@ public class CourseScheduler {
      * when the solution is found, we can look up the course components that are part of the
      * conflict-free schedule.
      */
-    private List<List<BoolVar>> addConstraints(List<List<CourseComponent>> components)
+    private void addConstraints(List<List<CourseComponent>> components)
             throws ParseException {
         List<List<BoolVar>> sectionList = mapCourseComponents(components);
+
+        if (hasSpecialConstraint(components, sectionList)) {
+            return;
+        }
 
         if (sectionList.size() == 1) {
             List<BoolVar> sectionA = sectionList.get(0);
@@ -192,6 +218,8 @@ public class CourseScheduler {
                 Constraint left = and(a);
                 solver.post(xor(left, not(or(a))));
                 sectionMap.put(left.reif(), components.get(i));
+
+                // Compare against other section
                 for (int j = i + 1; j < sectionList.size(); j++) {
                     List<BoolVar> sectionB = sectionList.get(j);
                     BoolVar[] b = sectionB.toArray(new BoolVar[sectionB.size()]);
@@ -218,37 +246,59 @@ public class CourseScheduler {
             // Finally post the large OR constraint
             solver.post(total);
         }
+    }
 
-        return sectionList;
+    /**
+     * Checks if this course's components require special constraints. This is when a user has
+     * specified that they want to be in a specific course section, signified by
+     * additionalConstraints. If so, we need to tell the SAT solver to include that section in the
+     * solution and force all other sections to not be allowed in the solution.
+     */
+    private boolean hasSpecialConstraint(List<List<CourseComponent>> components,
+                                         List<List<BoolVar>> sectionList) {
+        if (!additionalConstraints.isEmpty()) {
+            boolean added = false;
+            for (int i = 0; i < components.size(); i++) {
+                List<CourseComponent> section = components.get(i);
+                for (List<CourseComponent> sectionConstraint : additionalConstraints) {
+                    List<BoolVar> sectionBools = sectionList.get(i);
+                    BoolVar[] a = sectionBools.toArray(new BoolVar[sectionBools.size()]);
+                    if (isSameCourse(sectionConstraint.get(0), section.get(0))) {
+                        if (sectionConstraint.get(0).getSection()
+                                .equals(section.get(0).getSection())) {
+                            Constraint c = and(a);
+                            solver.post(c);
+                            sectionMap.put(c.reif(), section);
+                            added = true;
+                        } else {
+                            solver.post(not(or(a)));
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+            if (added) return true;
+        }
+        return false;
     }
 
     /**
      * Checks if pairs of course components conflict and generates a conflict pair.
      * Representation stays as BoolVar so the SAT solver can cleanly accept the object.
      */
-    private Set<Pair<BoolVar, BoolVar>> generateConflicts(List<List<BoolVar>> allComponents)
+    private Set<Pair<BoolVar, BoolVar>> generateConflicts(List<BoolVar> allComponents)
             throws ParseException {
         Set<Pair<BoolVar, BoolVar>> conflicts = new HashSet<>();
-
-        // First two loops grab components associated with a specific course
         for (int i = 0; i < allComponents.size() - 1; i++) {
-            List<BoolVar> courseA = allComponents.get(i);
+            BoolVar classA = allComponents.get(i);
             for (int j = i + 1; j < allComponents.size(); j++) {
-                List<BoolVar> courseB = allComponents.get(j);
-
-                // Check for conflicts between two courses
-                for (BoolVar boolA : courseA) {
-                    CourseComponent classA = courseMap.get(boolA);
-                    for (BoolVar boolB : courseB) {
-                        CourseComponent classB = courseMap.get(boolB);
-                        if (hasConflict(classA, classB)) {
-                            conflicts.add(new Pair<>(boolA, boolB));
-                        }
-                    }
+                BoolVar classB = allComponents.get(j);
+                if (hasConflict(courseMap.get(classA), courseMap.get(classB))) {
+                    conflicts.add(new Pair<>(classA, classB));
                 }
             }
         }
-
         return conflicts;
     }
 
