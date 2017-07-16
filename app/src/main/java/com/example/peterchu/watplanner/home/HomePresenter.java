@@ -192,17 +192,28 @@ class HomePresenter implements BasePresenter {
         }
     }
 
-    public AlertDialog.Builder createDialogBuilder(Context context, CourseComponent component) {
+    public AlertDialog.Builder createDialogBuilder(Context context, CourseComponent component, List<List<CourseComponent>> list) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.MaterialLightDialogTheme);
-        builder.setTitle(String.format("Switch %s section", getTypeSpelling(component.getType())));
+        if (list.size() == 0) {
+            builder.setTitle(String.format("No other sections for this %s", getTypeSpelling(component.getType())));
+        } else {
+            builder.setTitle(String.format("Switch %s section", getTypeSpelling(component.getType())));
+        }
         return builder;
     }
 
-    public CharSequence[] getListOfAlternativeTimes(CourseComponent courseComponent) {
+    public CharSequence[] getListOfAlternativeTimes(List<List<CourseComponent>> componentList) {
         // todo: convert List<CourseComponent> to String
-        CharSequence[] alternativeTimesArray = new CharSequence[4];
-        for (int i = 0; i < 4; i++) {
-            alternativeTimesArray[i] = ("EDDIE");
+        CharSequence[] alternativeTimesArray = new CharSequence[componentList.size()];
+        for (int i = 0; i < componentList.size(); i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < componentList.get(i).size(); j++) {
+                CourseComponent cc = componentList.get(i).get(j);
+                sb.append(deseralizeCourseInfo(cc.getDay(), cc.getStartTime(), cc.getEndTime()));
+                sb.append("\n");
+            }
+            alternativeTimesArray[i] = sb.toString();
+            sb.setLength(0); // reset
         }
         return alternativeTimesArray;
     }
@@ -216,11 +227,7 @@ class HomePresenter implements BasePresenter {
             return;
         }
 
-        if (alternatives.size() == 0) {
-            // No other sections that this course can switch into
-        } else {
-            homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
-        }
+        homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
     }
 
     private String getTypeSpelling(String type) {
@@ -230,5 +237,9 @@ class HomePresenter implements BasePresenter {
             case "LAB": return "lab";
             default: return null;
         }
+    }
+
+    private String deseralizeCourseInfo(String day, String start, String end) {
+        return String.format("%s, %s - %s", day, start, end);
     }
 }

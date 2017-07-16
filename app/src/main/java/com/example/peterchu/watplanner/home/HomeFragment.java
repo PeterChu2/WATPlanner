@@ -1,6 +1,5 @@
 package com.example.peterchu.watplanner.home;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -169,7 +167,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     public void showExportCalendarDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.MaterialLightDialogTheme);
-        builder.setTitle("Export added courses to your schedule.");
+        builder.setTitle("Export courses to calendar");
 
         builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
             @Override
@@ -234,23 +232,31 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     }
 
     public void showConflictFreeAlternativesDialog(
-            CourseComponent course,
-            List<List<CourseComponent>> alternatives) {
-//        ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
-//                HomeFragment.this.getContext(),
-//                course);
-//        Dialog d = new Dialog(HomeFragment.this.getContext());
-//        d.setContentView(alternateSlotView);
-//        d.show();
+            final CourseComponent course,
+            final List<List<CourseComponent>> alternatives) {
 
-        final AlertDialog.Builder builder = homePresenter.createDialogBuilder(getContext(), course);
+        final AlertDialog.Builder builder = homePresenter.createDialogBuilder(getContext(), course, alternatives);
+
+        if (alternatives.size() > 0) {
+            builder.setItems(homePresenter.getListOfAlternativeTimes(alternatives), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // todo: 1.) abstract to presenter
+                    // todo: 2.) remove LIST from selected section
+                    // todo: 3.) add LIST of selected section
+                    // todo: 4.) refresh calendar
+                    // todo: 5.) translate CourseComponent -> Course (ie. get CourseID)
+                    List<CourseComponent> selectedCourseList = alternatives.get(i);
+                    // remove current section (list)
+                    // add selected section
+                    // refresh calendar
+
+                    builder.create().dismiss();
+                }
+            });
+        }
+
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                builder.create().dismiss();
-            }
-        });
-        builder.setItems(homePresenter.getListOfAlternativeTimes(course), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 builder.create().dismiss();
