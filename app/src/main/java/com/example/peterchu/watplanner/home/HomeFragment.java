@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -237,7 +238,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     public void showConflictFreeAlternativesDialog(
             CourseComponent course,
-            List<List<CourseComponent>> alternatives) {
+            Set<List<CourseComponent>> alternatives) {
         ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
                 HomeFragment.this.getContext(),
                 course);
