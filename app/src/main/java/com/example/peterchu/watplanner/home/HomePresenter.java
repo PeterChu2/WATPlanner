@@ -205,11 +205,12 @@ class HomePresenter implements BasePresenter {
     public CharSequence[] getListOfAlternativeTimes(List<List<CourseComponent>> componentList) {
         // todo: convert List<CourseComponent> to String
         CharSequence[] alternativeTimesArray = new CharSequence[componentList.size()];
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
         for (int i = 0; i < componentList.size(); i++) {
-            StringBuilder sb = new StringBuilder();
             for (int j = 0; j < componentList.get(i).size(); j++) {
                 CourseComponent cc = componentList.get(i).get(j);
-                sb.append(deseralizeCourseInfo(cc.getDay(), cc.getStartTime(), cc.getEndTime()));
+                sb.append(deseralizeCourseInfo(getDaySpelling(cc.getDay()), cc.getStartTime(), cc.getEndTime(), cc.getEnrollmentTotal(), cc.getEnrollmentCapacity()));
                 sb.append("\n");
             }
             alternativeTimesArray[i] = sb.toString();
@@ -230,6 +231,11 @@ class HomePresenter implements BasePresenter {
         homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
     }
 
+    public void saveCourses(List<List<CourseComponent>> list) {
+//        dataRepository.clearAllCourses();
+//        dataRepository.addAllCourses(list);
+    }
+
     private String getTypeSpelling(String type) {
         switch(type) {
             case "LEC": return "lecture";
@@ -239,7 +245,20 @@ class HomePresenter implements BasePresenter {
         }
     }
 
-    private String deseralizeCourseInfo(String day, String start, String end) {
-        return String.format("%s, %s - %s", day, start, end);
+    private String getDaySpelling(String day) {
+        switch (day.toUpperCase()) {
+            case "M": return "Monday";
+            case "T": return "Tuesday";
+            case "W": return "Wednesday";
+            case "TH": return "Thursday";
+            case "F": return "Friday";
+            case "S": return "Saturday";
+            case "SU": return "Sunday";
+            default: return day;
+        }
+    }
+
+    private String deseralizeCourseInfo(String day, String start, String end, int total, int capacity) {
+        return String.format("%s, %s - %s (%s/%s)", day, start, end, total, capacity);
     }
 }

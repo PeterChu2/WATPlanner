@@ -224,6 +224,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     public void setCourseSchedule(List<List<CourseComponent>> courseSchedule) {
         mCourseSchedule = courseSchedule;
+        homePresenter.saveCourses(mCourseSchedule);
         weekView.notifyDatasetChanged();
     }
 
@@ -242,15 +243,26 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     // todo: 1.) abstract to presenter
-                    // todo: 2.) remove LIST from selected section
+                    // todo: 2.) remove LIST from original section
                     // todo: 3.) add LIST of selected section
                     // todo: 4.) refresh calendar
                     // todo: 5.) translate CourseComponent -> Course (ie. get CourseID)
                     List<CourseComponent> selectedCourseList = alternatives.get(i);
+                    List<List<CourseComponent>> updatedSchedule = new ArrayList<>();
+                    for (List<CourseComponent> componentList : mCourseSchedule) {
+                        List<CourseComponent> partialSchedule = new ArrayList<>();
+                        for (CourseComponent component : componentList) {
+                            if (!isCourseSameGroup(component, course)) {
+                                partialSchedule.add(component);
+                            }
+                        }
+                        updatedSchedule.add(partialSchedule);
+                    }
+                    updatedSchedule.add(selectedCourseList);
+                    setCourseSchedule(updatedSchedule);
                     // remove current section (list)
                     // add selected section
                     // refresh calendar
-
                     builder.create().dismiss();
                 }
             });
@@ -263,5 +275,13 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             }
         });
         builder.show();
+    }
+
+    private boolean isCourseSameGroup(CourseComponent prevCourse, CourseComponent currCourse) {
+        if (!prevCourse.getSubject().equals(currCourse.getSubject())) return false;
+        if (!prevCourse.getClassNumber().equals(currCourse.getClassNumber())) return false;
+        if (!prevCourse.getType().equals(currCourse.getType())) return false;
+        if (!prevCourse.getCatalogNumber().equals(currCourse.getCatalogNumber())) return false;
+        return true;
     }
 }
