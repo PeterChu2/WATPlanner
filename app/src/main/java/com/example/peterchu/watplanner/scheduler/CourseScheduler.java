@@ -200,29 +200,8 @@ public class CourseScheduler {
             throws ParseException {
         List<List<BoolVar>> sectionList = mapCourseComponents(components);
 
-        if (!additionalConstraints.isEmpty()) {
-            boolean added = false;
-            for (int i = 0; i < components.size(); i++) {
-                List<CourseComponent> section = components.get(i);
-                for (List<CourseComponent> sectionConstraint : additionalConstraints) {
-                    List<BoolVar> sectionBools = sectionList.get(i);
-                    BoolVar[] a = sectionBools.toArray(new BoolVar[sectionBools.size()]);
-                    if (isSameCourse(sectionConstraint.get(0), section.get(0))) {
-                        if (sectionConstraint.get(0).getSection()
-                                .equals(section.get(0).getSection())) {
-                            Constraint c = and(a);
-                            solver.post(c);
-                            sectionMap.put(c.reif(), section);
-                            added = true;
-                        } else {
-                            solver.post(not(or(a)));
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-            if (added) return;
+        if (hasSpecialConstraint(components, sectionList)) {
+            return;
         }
 
         if (sectionList.size() == 1) {
@@ -267,6 +246,41 @@ public class CourseScheduler {
             // Finally post the large OR constraint
             solver.post(total);
         }
+    }
+
+    /**
+     * Checks if this course's components require special constraints. This is when a user has
+     * specified that they want to be in a specific course section, signified by
+     * additionalConstraints. If so, we need to tell the SAT solver to include that section in the
+     * solution and force all other sections to not be allowed in the solution.
+     */
+    private boolean hasSpecialConstraint(List<List<CourseComponent>> components,
+                                         List<List<BoolVar>> sectionList) {
+        if (!additionalConstraints.isEmpty()) {
+            boolean added = false;
+            for (int i = 0; i < components.size(); i++) {
+                List<CourseComponent> section = components.get(i);
+                for (List<CourseComponent> sectionConstraint : additionalConstraints) {
+                    List<BoolVar> sectionBools = sectionList.get(i);
+                    BoolVar[] a = sectionBools.toArray(new BoolVar[sectionBools.size()]);
+                    if (isSameCourse(sectionConstraint.get(0), section.get(0))) {
+                        if (sectionConstraint.get(0).getSection()
+                                .equals(section.get(0).getSection())) {
+                            Constraint c = and(a);
+                            solver.post(c);
+                            sectionMap.put(c.reif(), section);
+                            added = true;
+                        } else {
+                            solver.post(not(or(a)));
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+            if (added) return true;
+        }
+        return false;
     }
 
     /**
