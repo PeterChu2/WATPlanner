@@ -71,4 +71,12 @@ public interface IDataRepository {
     Course getCourse(int courseId);
 
     Set<String> getUserCourses();
+
+    /**
+     * Associates a course component with a calender ID and an event ID in the Android calendar
+     * @param id the course component ID
+     * @param calID the Android calendar ID
+     * @param eventID the Android event ID
+     */
+    void associateCourseComponentEvent(int id, long calID, long eventID);
 }

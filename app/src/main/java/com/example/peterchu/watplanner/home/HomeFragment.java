@@ -176,7 +176,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             public void onClick(DialogInterface dialog, int which) {
                 // TODO: Replace empty list with the configuration of course components for courses
                 // that the user selected/SAT solver came up with
-                homePresenter.onExportCoursesToCalendar(new ArrayList<CourseComponent>());
+                homePresenter.onExportCoursesToCalendar(mCourseSchedule);
             }
         });
 

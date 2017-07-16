@@ -59,6 +59,18 @@ public class CourseComponent {
 
     private String term;
 
+    private int id;
+
+    private Integer calendarId;
+
+    private Integer eventId;
+
+    private String courseId;
+
+    public int getId() { return id; }
+
+    public void setId(int id) { this.id = id; }
+
     public String getType() {
         return type;
     }
@@ -175,7 +187,7 @@ public class CourseComponent {
         this.day = day;
     }
 
-    public void setTerm(String day) {
+    public void setTerm(String term) {
         this.term = term;
     }
 
@@ -240,22 +252,40 @@ public class CourseComponent {
         return cal;
     }
 
-    public Calendar getCalendarStartTime() {
+    /**
+     * Gets the first calendar event start time of recurring course component event
+     * Goes to the first day of the week that the course component is on after the term start date
+     * @return the first calendar event start time
+     */
+    public Calendar getFirstCalendarStartTime() {
         try {
             Calendar cal = this.getTermStartDate();
+            while (cal.get(Calendar.DAY_OF_WEEK) != this.getDayOfWeek()) {
+                cal.add(Calendar.DATE, 1);
+            }
             Date date = componentDateFormat.parse(this.startTime);
-            cal.setTime(date);
+            cal.set(Calendar.HOUR, date.getHours());
+            cal.set(Calendar.MINUTE, date.getMinutes());
             return cal;
         } catch (ParseException e) {
             return null;
         }
     }
 
-    public Calendar getCalendarEndTime() {
+    /**
+     * Gets the first calendar event end time of recurring course component event
+     * Goes to the first day of the week that the course component is on after the term start date
+     * @return the first calendar event end time
+     */
+    public Calendar getFirstCalendarEndTime() {
         try {
             Calendar cal = this.getTermStartDate();
+            while (cal.get(Calendar.DAY_OF_WEEK) != this.getDayOfWeek()) {
+                cal.add(Calendar.DATE, 1);
+            }
             Date date = componentDateFormat.parse(this.endTime);
-            cal.setTime(date);
+            cal.set(Calendar.HOUR, date.getHours());
+            cal.set(Calendar.MINUTE, date.getMinutes());
             return cal;
         } catch (ParseException e) {
             return null;
@@ -276,8 +306,8 @@ public class CourseComponent {
                 return new ArrayList<>();
             }
             while (date.get(Calendar.MONTH) == month) {
-                Calendar eventStartDate = this.getCalendarStartTime();
-                Calendar eventEndDate = this.getCalendarEndTime();
+                Calendar eventStartDate = this.getFirstCalendarStartTime();
+                Calendar eventEndDate = this.getFirstCalendarEndTime();
                 if (Integer.valueOf(date.get(Calendar.DAY_OF_WEEK)) == this.getDayOfWeek()) {
                     WeekViewCourseEvent event = new WeekViewCourseEvent(this);
 
@@ -328,5 +358,25 @@ public class CourseComponent {
     public String getTermEndDate() {
         // TODO: need to actually fetch term info later
         return "20170725";
+    }
+
+    public Integer getCalendarId() {
+        return calendarId;
+    }
+
+    public void setCalendarId(Integer calendarId) {
+        this.calendarId = calendarId;
+    }
+
+    public Integer getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(Integer eventId) {
+        this.eventId = eventId;
+    }
+
+    public void setCourseId(String courseId) {
+        this.courseId = courseId;
     }
 }

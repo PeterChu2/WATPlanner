@@ -241,6 +241,11 @@ public class DataRepository implements IDataRepository {
                 Constants.SHARED_PREFS_ADDED_COURSES, new HashSet<String>());
     }
 
+    @Override
+    public void associateCourseComponentEvent(int id, long calId, long eventId) {
+        databaseHandler.associateCourseComponentEvent(id, calId, eventId);
+    }
+
     public interface SyncDataCallback {
         void onDataSynced();
 
