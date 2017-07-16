@@ -238,7 +238,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     public void showConflictFreeAlternativesDialog(
             CourseComponent course,
-            Set<List<CourseComponent>> alternatives) {
+            List<List<CourseComponent>> alternatives) {
         ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
                 HomeFragment.this.getContext(),
                 course);

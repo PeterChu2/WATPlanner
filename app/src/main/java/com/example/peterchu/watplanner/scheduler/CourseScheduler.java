@@ -138,9 +138,9 @@ public class CourseScheduler {
      * Given a course component, this will determine what other section that the component can
      * switch into and still maintain a conflict-free schedule.
      */
-    public Set<List<CourseComponent>> getAlternateSections(CourseComponent component)
+    public List<List<CourseComponent>> getAlternateSections(CourseComponent component)
             throws ContradictionException {
-        Set<List<CourseComponent>> ret = new HashSet<>();
+        List<List<CourseComponent>> ret = new ArrayList<>();
         for (Solution solution : solver.getSolutionRecorder().getSolutions()) {
             solver.getSearchLoop().restoreRootNode();
             solver.getEnvironment().worldPush();
@@ -149,7 +149,8 @@ public class CourseScheduler {
                 List<CourseComponent> c = entry.getValue();
                 if (entry.getKey().getValue() == 1
                         && isSameCourse(component, c.get(0))
-                        && !component.getSection().equals(c.get(0).getSection())) {
+                        && !component.getSection().equals(c.get(0).getSection())
+                        && !ret.contains(c)) {
                     ret.add(c);
                 }
             }

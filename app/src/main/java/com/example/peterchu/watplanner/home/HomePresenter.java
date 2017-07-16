@@ -171,7 +171,7 @@ class HomePresenter implements BasePresenter {
     }
 
     public void onCalendarEventClicked(CourseComponent courseComponent) {
-        Set<List<CourseComponent>> alternatives;
+        List<List<CourseComponent>> alternatives;
         try {
             alternatives = scheduler.getAlternateSections(courseComponent);
         } catch (ContradictionException e) {
