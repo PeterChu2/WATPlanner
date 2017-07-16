@@ -71,7 +71,7 @@ public class CourseScheduler {
         currentSchedule.clear();
     }
 
-    public void addUserCourseConstraints() throws ParseException {
+    private void addUserCourseConstraints() throws ParseException {
         Set<String> courseIds = dataRepository.getUserCourses();
 
         // Set constraints for each course
@@ -82,7 +82,7 @@ public class CourseScheduler {
         addConflictConstraints();
     }
 
-    public void addCourseConstraint(int courseId) throws ParseException {
+    private void addCourseConstraint(int courseId) throws ParseException {
         // Lists are already sorted
         List<List<CourseComponent>> lectures = dataRepository.getLectures(courseId);
         List<List<CourseComponent>> tutorials = dataRepository.getTutorials(courseId);
