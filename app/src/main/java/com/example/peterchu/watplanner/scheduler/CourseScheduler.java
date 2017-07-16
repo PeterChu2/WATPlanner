@@ -149,7 +149,8 @@ public class CourseScheduler {
                 List<CourseComponent> c = entry.getValue();
                 if (entry.getKey().getValue() == 1
                         && isSameCourse(component, c.get(0))
-                        && !component.getSection().equals(c.get(0).getSection())) {
+                        && !component.getSection().equals(c.get(0).getSection())
+                        && !ret.contains(c)) {
                     ret.add(c);
                 }
             }
