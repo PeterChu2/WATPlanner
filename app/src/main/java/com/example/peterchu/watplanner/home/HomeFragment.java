@@ -88,6 +88,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         });
 
         weekView = (WeekView) root.findViewById(R.id.weekViewHome);
+
         // The week view has infinite scrolling horizontally. We have to provide the events of a
         // month every time the month changes on the week view.
         weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
@@ -241,28 +242,16 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         if (alternatives.size() > 0) {
             builder.setItems(homePresenter.getListOfAlternativeTimes(alternatives), new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
+                public void onClick(DialogInterface dialogInterface, int index) {
                     // todo: 1.) abstract to presenter
                     // todo: 2.) remove LIST from original section
                     // todo: 3.) add LIST of selected section
                     // todo: 4.) refresh calendar
-                    // todo: 5.) translate CourseComponent -> Course (ie. get CourseID)
-                    List<CourseComponent> selectedCourseList = alternatives.get(i);
-                    List<List<CourseComponent>> updatedSchedule = new ArrayList<>();
-                    for (List<CourseComponent> componentList : mCourseSchedule) {
-                        List<CourseComponent> partialSchedule = new ArrayList<>();
-                        for (CourseComponent component : componentList) {
-                            if (!isCourseSameGroup(component, course)) {
-                                partialSchedule.add(component);
-                            }
-                        }
-                        updatedSchedule.add(partialSchedule);
-                    }
-                    updatedSchedule.add(selectedCourseList);
+                    List<CourseComponent> selectedAlternative = alternatives.get(index);
+                    // get new curated list of course schedules
+                    List<List<CourseComponent>> updatedSchedule = homePresenter.getAlternativeSchedule(course, selectedAlternative, mCourseSchedule);
+                    // set schedule and refresh calendar view
                     setCourseSchedule(updatedSchedule);
-                    // remove current section (list)
-                    // add selected section
-                    // refresh calendar
                     builder.create().dismiss();
                 }
             });
@@ -275,13 +264,5 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             }
         });
         builder.show();
-    }
-
-    private boolean isCourseSameGroup(CourseComponent prevCourse, CourseComponent currCourse) {
-        if (!prevCourse.getSubject().equals(currCourse.getSubject())) return false;
-        if (!prevCourse.getClassNumber().equals(currCourse.getClassNumber())) return false;
-        if (!prevCourse.getType().equals(currCourse.getType())) return false;
-        if (!prevCourse.getCatalogNumber().equals(currCourse.getCatalogNumber())) return false;
-        return true;
     }
 }

@@ -216,35 +216,6 @@ public class DataRepository implements IDataRepository {
     }
 
     @Override
-    public void clearAllCourses() {
-        Set<String> addedCourses = getUserCourses();
-        addedCourses.clear();
-        sharedPreferences.edit()
-                .remove(Constants.SHARED_PREFS_ADDED_COURSES)
-                .apply();
-        sharedPreferences.edit()
-                .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
-                .apply();
-    }
-
-    @Override
-    public void addAllCourses(List<List<CourseComponent>> courseList) {
-        for (List<CourseComponent> list : courseList) {
-            for (CourseComponent course : list) {
-//                Set<String> addedCourses = getUserCourses();
-//                // todo: get courseID from Tim
-//                addedCourses.add(String.valueOf(courseId));
-//                sharedPreferences.edit()
-//                        .remove(Constants.SHARED_PREFS_ADDED_COURSES)
-//                        .apply();
-//                sharedPreferences.edit()
-//                        .putStringSet(Constants.SHARED_PREFS_ADDED_COURSES, addedCourses)
-//                        .apply();
-            }
-        }
-    }
-
-    @Override
     public List<Course> getAllCourses() {
         return databaseHandler.getAllCourses();
     }

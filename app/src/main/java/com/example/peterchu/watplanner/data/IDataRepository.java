@@ -63,10 +63,6 @@ public interface IDataRepository {
                                  String courseNumber,
                                  final DataRepository.CourseDetailsCallback callback);
 
-    void clearAllCourses();
-
-    void addAllCourses(List<List<CourseComponent>> list);
-
     /**
      * Returns all Courses stored in the SQL database
      */
