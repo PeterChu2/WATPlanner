@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -98,38 +99,56 @@ class HomePresenter implements BasePresenter {
         return homeFragment.openDetailView(c == null ? null : c.getId());
     }
 
-    public void onExportCoursesToCalendar(List<CourseComponent> courseSchedule) {
-        for (CourseComponent courseComponent : courseSchedule) {
-            long calID = getDefaultCalendarID(this.homeFragment.getActivity());
-            Calendar startDate = courseComponent.getCalendarStartTime();
-            Calendar endDate = courseComponent.getCalendarEndTime();
-            long startMillis = startDate.getTimeInMillis();
-            long endMillis = endDate.getTimeInMillis();
+    public void onExportCoursesToCalendar(List<List<CourseComponent>> courseSchedule) {
+        boolean canWriteCalendar = ContextCompat.checkSelfPermission(
+                this.homeFragment.getActivity(),
+                Manifest.permission.WRITE_CALENDAR
+        ) == PackageManager.PERMISSION_GRANTED;
 
-            ContentResolver cr = this.homeFragment.getActivity().getContentResolver();
-            ContentValues values = new ContentValues();
-            values.put(CalendarContract.Events.DTSTART, startMillis);
-            values.put(CalendarContract.Events.DTEND, endMillis);
-            values.put(CalendarContract.Events.TITLE, String.format("%s %d",
-                    courseComponent.getSubject(), courseComponent.getCatalogNumber()));
-            values.put(CalendarContract.Events.DESCRIPTION, courseComponent.getTitle());
-            values.put(CalendarContract.Events.CALENDAR_ID, calID);
-            values.put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
-            values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY;UNTIL=" + courseComponent
-                    .getTermEndDate());
-            boolean canWriteCalendar = ContextCompat.checkSelfPermission(
-                    this.homeFragment.getActivity(),
-                    Manifest.permission.WRITE_CALENDAR
-            ) == PackageManager.PERMISSION_GRANTED;
+        if (!canWriteCalendar) {
+            ActivityCompat.requestPermissions(this.homeFragment.getActivity(),
+                    new String[]{Manifest.permission.WRITE_CALENDAR,
+                            Manifest.permission.READ_CALENDAR}, 0);
+        }
+        long calId = getDefaultCalendarID(this.homeFragment.getActivity());
 
-            if (!canWriteCalendar) {
-                ActivityCompat.requestPermissions(this.homeFragment.getActivity(),
-                        new String[]{Manifest.permission.WRITE_CALENDAR,
-                                Manifest.permission.READ_CALENDAR}, 0);
+        for (List<CourseComponent> courseComponents : courseSchedule) {
+            for (CourseComponent courseComponent : courseComponents) {
+                if (courseComponent.getCalendarId() != null &&
+                        courseComponent.getEventId() != null) {
+                    // course component is already exported to user's calendar
+                    continue;
+                }
+                Calendar startDate = courseComponent.getFirstCalendarStartTime();
+                Calendar endDate = courseComponent.getFirstCalendarEndTime();
+                long startMillis = startDate.getTimeInMillis();
+                long endMillis = endDate.getTimeInMillis();
+
+                ContentResolver cr = this.homeFragment.getActivity().getContentResolver();
+                ContentValues values = new ContentValues();
+                values.put(CalendarContract.Events.DTSTART, startMillis);
+                values.put(CalendarContract.Events.DTEND, endMillis);
+                values.put(CalendarContract.Events.TITLE, String.format("%s %d %s",
+                        courseComponent.getSubject(),
+                        Integer.valueOf(courseComponent.getCatalogNumber()),
+                        courseComponent.getType()));
+                values.put(CalendarContract.Events.DESCRIPTION, String.format("%s with %s",
+                        courseComponent.getTitle(),
+                        TextUtils.join(",", courseComponent.getInstructors())));
+                values.put(CalendarContract.Events.EVENT_LOCATION,
+                        courseComponent.getLocation().toString());
+                values.put(CalendarContract.Events.CALENDAR_ID, calId);
+                values.put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
+                values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY;UNTIL=" + courseComponent
+                        .getTermEndDate());
+
+                Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                long eventId = Long.parseLong(uri.getLastPathSegment());
+                Log.d("CalendarEvent", String.format("Event exported! Calendar ID %d, EventID %d",
+                        calId, eventId));
+                dataRepository.associateCourseComponentEvent(
+                        courseComponent.getId(), calId, eventId);
             }
-            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
-            long eventID = Long.parseLong(uri.getLastPathSegment());
-            System.out.println(eventID);
         }
         Toast.makeText(this.homeFragment.getActivity(), "Courses exported!", Toast.LENGTH_SHORT);
     }
@@ -145,9 +164,12 @@ class HomePresenter implements BasePresenter {
         if (managedCursor.moveToFirst()) {
             long calID;
             int idCol = managedCursor.getColumnIndex(projection[0]);
+            int nameCol = managedCursor.getColumnIndex(projection[1]);
+            String name = managedCursor.getString(nameCol);
             do {
                 calID = managedCursor.getLong(idCol);
                 managedCursor.close();
+                Log.d("DefaultCalendar", String.format("%s, %d", name, calID));
                 return calID;
             } while (managedCursor.moveToNext());
         }

@@ -61,7 +61,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_START_DATE = "startDate";
     private static final String KEY_END_DATE = "endDate";
     private static final String KEY_INSTRUCTORS = "instructors";
-    private static final String KEY_TERM = "title";
+    private static final String KEY_TERM = "term";
+    private static final String KEY_CALENDAR_ID = "calendarId";
+    private static final String KEY_EVENT_ID = "eventId";
 
     private static DatabaseHandler dbSingleton;
 
@@ -74,6 +76,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             dbSingleton = new DatabaseHandler(context);
         }
         return dbSingleton;
+    }
+
+    public void associateCourseComponentEvent(int id, long calId, long eventId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + TABLE_SCHEDULES
+                + " SET " + KEY_EVENT_ID + " = ?" + ", " + KEY_CALENDAR_ID + " = ?"
+                + " WHERE " + KEY_ID + " = ?";
+        Cursor cursor = db.rawQuery(query,
+                new String[] {String.valueOf(eventId), String.valueOf(calId), String.valueOf(id)});
+        cursor.moveToFirst();
+        cursor.close();
+        Log.d("CalendarEvent", String.format("Associating course component with ID %d to calendar" +
+        "with ID %d with event ID %d", id, calId, eventId));
     }
 
 
@@ -164,6 +179,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                         values.put(KEY_ROOM, sClass.getLocation().getRoom());
                         values.put(KEY_INSTRUCTORS, ListToSerializableString(sClass.getInstructors()));
                         values.put(KEY_TERM, courseSchedule.getTerm());
+                        values.put(KEY_CALENDAR_ID, (Integer) null);
+                        values.put(KEY_EVENT_ID, (Integer) null);
                         Log.d("DBHandler", "Adding Schedules for " + courseSchedule.getSubject() + courseSchedule.getCatalogNumber() + " - " + weekday);
                         db.insert(TABLE_SCHEDULES, null, values);
                     }
@@ -205,8 +222,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_END_TIME + " TEXT," + KEY_IS_CANCELLED + " INTEGER," + KEY_IS_CLOSED + " INTEGER,"
                 + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT,"
                 + KEY_BUIDING + " TEXT," + KEY_ROOM + " TEXT," + KEY_INSTRUCTORS + " TEXT,"
-                + KEY_COURSE_ID + " INTEGER," +
-                " FOREIGN KEY (" + KEY_COURSE_ID + ") REFERENCES " + TABLE_COURSES + "(" + KEY_ID + "))";
+                + KEY_TERM + " TEXT," + KEY_COURSE_ID + " INTEGER," + KEY_CALENDAR_ID + " INTEGER,"
+                + KEY_EVENT_ID + " INTEGER," + " FOREIGN KEY (" + KEY_COURSE_ID + ") REFERENCES "
+                + TABLE_COURSES + "(" + KEY_ID + "))";
 
         db.execSQL(CREATE_SCHEDULES_TABLE);
     }
@@ -407,6 +425,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     private CourseComponent makeCourseComponent(Cursor cursor) {
         CourseComponent courseComponent = new CourseComponent();
+        courseComponent.setId(Integer.parseInt(cursor.getString(0)));
         courseComponent.setClassNumber(cursor.getInt(1));
         courseComponent.setSubject(cursor.getString(2));
         courseComponent.setCatalogNumber(cursor.getString(3));
@@ -423,12 +442,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         courseComponent.setIsClosed(cursor.getInt(14) == 1);
         courseComponent.setIsTba(cursor.getInt(15) == 1);
         courseComponent.setDay(cursor.getString(16));
-        courseComponent.setTerm(cursor.getString(17));
         Location loc = new Location();
         loc.setBuilding(cursor.getString(17));
         loc.setRoom(cursor.getString(18));
         courseComponent.setLocation(loc);
         courseComponent.setInstructors(SerializableStringToArray(cursor.getString(19)));
+        courseComponent.setTerm(cursor.getString(20));
+        if (!cursor.isNull(22)) {
+            courseComponent.setCalendarId(cursor.getInt(22));
+        }
+        if (!cursor.isNull(23)) {
+            courseComponent.setEventId(cursor.getInt(23));
+        }
         return courseComponent;
     }
 
