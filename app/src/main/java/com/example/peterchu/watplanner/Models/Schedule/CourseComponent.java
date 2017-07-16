@@ -264,7 +264,7 @@ public class CourseComponent {
                 cal.add(Calendar.DATE, 1);
             }
             Date date = componentDateFormat.parse(this.startTime);
-            cal.set(Calendar.HOUR, date.getHours());
+            cal.set(Calendar.HOUR_OF_DAY, date.getHours());
             cal.set(Calendar.MINUTE, date.getMinutes());
             return cal;
         } catch (ParseException e) {
@@ -284,7 +284,7 @@ public class CourseComponent {
                 cal.add(Calendar.DATE, 1);
             }
             Date date = componentDateFormat.parse(this.endTime);
-            cal.set(Calendar.HOUR, date.getHours());
+            cal.set(Calendar.HOUR_OF_DAY, date.getHours());
             cal.set(Calendar.MINUTE, date.getMinutes());
             return cal;
         } catch (ParseException e) {
