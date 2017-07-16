@@ -72,7 +72,7 @@ public class DataRepository implements IDataRepository {
     }
 
     @Override
-    public void syncData(final SyncDataCallback callback) {
+    public void syncData(final SyncDataCallback callback, final Activity activity) {
         // TODO: Should grab current term from API and use that value instead of hardcoding it
         if (databaseHandler.getCoursesCount() == 0) {
             Log.d("DataRepository", "Performing data sync");
@@ -89,7 +89,12 @@ public class DataRepository implements IDataRepository {
                                 @Override
                                 public void onFinishTransaction(DatabaseHandler dbHandler) {
                                     Log.d("DataRepository", "Database synced with courses");
-                                    callback.onDataSynced();
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            callback.onDataSynced();
+                                        }
+                                    });
                                 }
 
                                 @Override

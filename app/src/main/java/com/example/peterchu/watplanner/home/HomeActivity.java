@@ -31,7 +31,7 @@ public class HomeActivity extends AppCompatActivity {
                 .add(R.id.container, homeFragment)
                 .commit();
 
-        homePresenter = new HomePresenter(homeFragment, DataRepository.getDataRepository(this));
+        homePresenter = new HomePresenter(homeFragment, DataRepository.getDataRepository(this), this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

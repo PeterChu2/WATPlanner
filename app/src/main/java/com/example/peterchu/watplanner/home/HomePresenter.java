@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.home;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -22,7 +23,6 @@ import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
 import org.chocosolver.solver.exception.ContradictionException;
 
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -33,11 +33,14 @@ class HomePresenter implements BasePresenter {
     private HomeFragment homeFragment;
     private IDataRepository dataRepository;
     private CourseScheduler scheduler;
+    private Activity parentActivity;
 
     public HomePresenter(HomeFragment homeFragment,
-                         IDataRepository dataRepository) {
+                         IDataRepository dataRepository,
+                         Activity parentActivity) {
         this.homeFragment = homeFragment;
         this.dataRepository = dataRepository;
+        this.parentActivity = parentActivity;
         scheduler = new CourseScheduler(dataRepository);
         homeFragment.setPresenter(this);
     }
@@ -56,7 +59,8 @@ class HomePresenter implements BasePresenter {
             public void onDataSyncFailure() {
                 // TODO: Implement retry. Continual failure should alert user.
             }
-        });
+        },
+        this.parentActivity);
     }
 
     /**
