@@ -65,7 +65,7 @@ public class CourseComponent {
 
     private Integer eventId;
 
-    private String courseId;
+    private Integer courseId;
 
     public int getId() { return id; }
 
@@ -376,7 +376,9 @@ public class CourseComponent {
         this.eventId = eventId;
     }
 
-    public void setCourseId(String courseId) {
+    public void setCourseId(int courseId) {
         this.courseId = courseId;
     }
+
+    public int getCourseId() { return this.courseId; }
 }
