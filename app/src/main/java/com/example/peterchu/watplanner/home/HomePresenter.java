@@ -196,7 +196,7 @@ class HomePresenter implements BasePresenter {
         List<List<CourseComponent>> alternatives;
         try {
             alternatives = scheduler.getAlternateSections(courseComponent);
-        } catch (ContradictionException e) {
+        } catch (Exception e) {
             Log.e("HomePresenter", "Failed to get alternate slots!");
             return;
         }
