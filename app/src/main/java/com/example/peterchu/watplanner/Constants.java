@@ -12,4 +12,5 @@ public class Constants {
     public static final String TUT = "TUT";
     public static final String SEM = "SEM";
     public static final String LAB = "LAB";
+    public static final int REQUEST_CALENDAR_PERMISSIONS = 0;
 }

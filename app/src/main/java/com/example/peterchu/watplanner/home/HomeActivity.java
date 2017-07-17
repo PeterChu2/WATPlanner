@@ -1,11 +1,13 @@
 package com.example.peterchu.watplanner.home;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.peterchu.watplanner.Constants;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -13,6 +15,7 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 public class HomeActivity extends AppCompatActivity {
 
     HomePresenter homePresenter;
+    HomeFragment homeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +23,7 @@ public class HomeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        HomeFragment homeFragment =
+        homeFragment =
                 (HomeFragment) getSupportFragmentManager().findFragmentById(R.id.container);
         if (homeFragment == null) {
             homeFragment = new HomeFragment();
@@ -57,5 +60,27 @@ public class HomeActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case Constants.REQUEST_CALENDAR_PERMISSIONS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length == 0) {
+                    return;
+                }
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                        return;
+                    }
+                }
+                homeFragment.exportCalendar();
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 }
