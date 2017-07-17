@@ -24,6 +24,7 @@ import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
+import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
 
 import java.util.Calendar;
 import java.util.List;
@@ -36,6 +37,7 @@ class HomePresenter implements BasePresenter {
     private IDataRepository dataRepository;
     private CourseScheduler scheduler;
     private Activity parentActivity;
+    private List<List<CourseComponent>> schedule;
 
     public HomePresenter(HomeFragment homeFragment,
                          IDataRepository dataRepository,
@@ -43,12 +45,14 @@ class HomePresenter implements BasePresenter {
         this.homeFragment = homeFragment;
         this.dataRepository = dataRepository;
         this.parentActivity = parentActivity;
-        scheduler = new CourseScheduler(dataRepository);
+        this.scheduler = new CourseScheduler(dataRepository);
         homeFragment.setPresenter(this);
     }
 
     @Override
     public void start() {
+        // retrieve from cache.
+        schedule = dataRepository.getCourseSchedules();
         // If data is already synced, the callback executes immediately.
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
             @Override
@@ -65,33 +69,24 @@ class HomePresenter implements BasePresenter {
         this.parentActivity);
     }
 
+    public void pause() {
+        // save to cache.
+        dataRepository.setCourseSchedules(schedule);
+    }
+
     /**
      * Tells the scheduler to run it's SAT solver to find a conflict-free schedule and the View
      * to display it.
      */
     private void generateScheduleForCalendar() {
-        try {
-            if (scheduler.generateSchedules()) {
-                Log.d("HomePresenter", "Conflict-free schedule generated!");
-            } else {
-                // The application should never enter this state, throw RTE
-                throw new IllegalStateException("No conflict-free schedule generated!");
-            }
-        } catch (Exception e) {
-            Log.e("HomePresenter", "Failed to generate schedule: " + e);
-            return;
-        }
-        List<List<CourseComponent>> schedule = scheduler.getCurrentSchedule();
-        // save cache.
-        dataRepository.setCourseSchedules(schedule);
+        schedule = ScheduleUtils.getGeneratedSchedules(scheduler);
         homeFragment.setCourseSchedule(schedule);
     }
 
     private void recoverLastSavedScheduleState() {
-        List<List<CourseComponent>> recoveredSchedule = dataRepository.getCourseSchedules();
         // check cache
-        if (recoveredSchedule != null && recoveredSchedule.size() > 0) {
-            homeFragment.setCourseSchedule(recoveredSchedule);
+        if (schedule != null && schedule.size() > 0) { // cache-hit
+            homeFragment.setCourseSchedule(schedule);
         } else { // cache-miss
             generateScheduleForCalendar();
         }

@@ -8,6 +8,8 @@ import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
+import com.example.peterchu.watplanner.scheduler.CourseScheduler;
+import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -21,6 +23,8 @@ class CourseDetailPresenter implements BasePresenter {
     private boolean isFirstLoad = true;
     private boolean isAddedCourse;
     private Activity activity;
+    private CourseScheduler scheduler;
+    private List<List<CourseComponent>> schedule;
 
     CourseDetailPresenter(CourseDetailFragment courseDetailFragment,
                           int courseId,
@@ -30,6 +34,7 @@ class CourseDetailPresenter implements BasePresenter {
         this.courseId = courseId;
         this.dataRepository = dataRepository;
         this.activity = activity;
+        this.scheduler = new CourseScheduler(dataRepository);
         courseDetailFragment.setPresenter(this);
     }
 
@@ -68,7 +73,6 @@ class CourseDetailPresenter implements BasePresenter {
                     this.activity
             );
 
-
             dataRepository.getCourseDetails(
                     course.getSubject(),
                     course.getNumber(),
@@ -85,6 +89,13 @@ class CourseDetailPresenter implements BasePresenter {
                     });
             isFirstLoad = false;
         }
+        // retrieve from cache.
+        schedule = dataRepository.getCourseSchedules();
+    }
+
+    public void pause() {
+        // save to cache.
+        dataRepository.setCourseSchedules(schedule);
     }
 
     void onFabClicked() {
@@ -98,5 +109,6 @@ class CourseDetailPresenter implements BasePresenter {
             dataRepository.addUserCourse(courseId);
         }
         courseDetailFragment.toggleFabRotation();
+        schedule = ScheduleUtils.getGeneratedSchedules(scheduler);
     }
 }

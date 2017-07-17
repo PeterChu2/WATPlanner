@@ -167,6 +167,12 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         homePresenter.start();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        homePresenter.pause();
+    }
+
     public void showExportCalendarDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.MaterialLightDialogTheme);
         builder.setTitle("Export courses to calendar");

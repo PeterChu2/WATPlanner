@@ -1,6 +1,7 @@
 package com.example.peterchu.watplanner.scheduler;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import com.alamkanak.weekview.WeekViewEvent;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
@@ -35,4 +36,18 @@ public class ScheduleUtils {
         return events;
     }
 
+    public static List<List<CourseComponent>> getGeneratedSchedules(CourseScheduler scheduler) {
+        try {
+            if (scheduler.generateSchedules()) {
+                Log.d("HomePresenter", "Conflict-free schedule generated!");
+            } else {
+                // The application should never enter this state, throw RTE
+                throw new IllegalStateException("No conflict-free schedule generated!");
+            }
+        } catch (Exception e) {
+            Log.e("HomePresenter", "Failed to generate schedule: " + e);
+            return new ArrayList<>();
+        }
+        return scheduler.getCurrentSchedule();
+    }
 }

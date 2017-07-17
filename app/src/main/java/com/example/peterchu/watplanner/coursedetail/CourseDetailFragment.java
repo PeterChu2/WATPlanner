@@ -134,6 +134,12 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         presenter.start();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        presenter.pause();
+    }
+
     public void showAddButton() {
         fab.setImageResource(R.drawable.ic_add_white_24px);
     }
