@@ -53,7 +53,7 @@ class HomePresenter implements BasePresenter {
             @Override
             public void onDataSynced() {
                 loadCourseCards();
-                generateScheduleForCalendar();
+                recoverLastSavedScheduleState();
             }
 
             @Override
@@ -69,24 +69,30 @@ class HomePresenter implements BasePresenter {
      * to display it.
      */
     private void generateScheduleForCalendar() {
-        // todo - link with kwok tong
-//        List<List<CourseComponent>> schedules = dataRepository.getCourseSchedules();
-        List<List<CourseComponent>> schedules = null;
-        if (schedules == null) {
-            try {
-                if (scheduler.generateSchedules()) {
-                    Log.d("HomePresenter", "Conflict-free schedule generated!");
-                } else {
-                    // The application should never enter this state, throw RTE
-                    throw new IllegalStateException("No conflict-free schedule generated!");
-                }
-            } catch (Exception e) {
-                Log.e("HomePresenter", "Failed to generate schedule: " + e);
-                return;
+        try {
+            if (scheduler.generateSchedules()) {
+                Log.d("HomePresenter", "Conflict-free schedule generated!");
+            } else {
+                // The application should never enter this state, throw RTE
+                throw new IllegalStateException("No conflict-free schedule generated!");
             }
-            homeFragment.setCourseSchedule(scheduler.getCurrentSchedule());
-        } else {
-            homeFragment.setCourseSchedule(schedules);
+        } catch (Exception e) {
+            Log.e("HomePresenter", "Failed to generate schedule: " + e);
+            return;
+        }
+        List<List<CourseComponent>> schedule = scheduler.getCurrentSchedule();
+        // save in cache for future recovery
+//        dataRepository.setCourseSchedules(schedule); // todo - tim link this please
+        homeFragment.setCourseSchedule(schedule);
+    }
+
+    private void recoverLastSavedScheduleState() {
+//        List<List<CourseComponent>> recoveredSchedule = dataRepository.getCourseSchedules(); // todo - kwok yin timothy
+        List<List<CourseComponent>> recoveredSchedule = null; //todo - delete after tim adds
+        if (recoveredSchedule != null) { // todo - tim, make sure response returns null or some special char to indicate cache miss!
+            homeFragment.setCourseSchedule(recoveredSchedule);
+        } else { // cache-miss
+            generateScheduleForCalendar();
         }
     }
 
