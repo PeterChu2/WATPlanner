@@ -1,11 +1,14 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import android.app.Activity;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 
 import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
+import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
@@ -99,6 +102,11 @@ class CourseDetailPresenter implements BasePresenter {
     }
 
     void onFabClicked() {
+        if (isAddedCourseConflict()) {
+            showConflictDialog();
+            return;
+        }
+
         if (isAddedCourse) {
             isAddedCourse = false;
             courseDetailFragment.showRemovedMessage();
@@ -110,5 +118,29 @@ class CourseDetailPresenter implements BasePresenter {
         }
         courseDetailFragment.toggleFabRotation();
         schedule = ScheduleUtils.getGeneratedSchedules(scheduler);
+    }
+
+    private boolean isAddedCourseConflict() {
+        // test condition by adding it
+        dataRepository.addUserCourse(courseId);
+        // then evaluate the new rendered schedule
+        List<List<CourseComponent>> newSchedule = ScheduleUtils.getGeneratedSchedules(scheduler);
+        // remove the course after sampling
+        dataRepository.removeUserCourse(courseId);
+        // determine if conflict occurs based on SAT response
+        return newSchedule.isEmpty();
+    }
+
+    private void showConflictDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(courseDetailFragment.getContext(), R.style.MaterialLightDialogTheme);
+        builder.setTitle("Course cannot be added to schedule");
+        builder.setMessage("\r\nNo conflict-free schedules possible\r\nTry adjusting current courses");
+        builder.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        builder.show();
     }
 }
