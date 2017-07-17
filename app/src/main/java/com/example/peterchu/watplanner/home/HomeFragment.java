@@ -48,6 +48,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     WeekView weekView;
     List<List<CourseComponent>> mCourseSchedule;
 
+    int indexOfSelection;
 
     @Override
     public void setPresenter(HomePresenter presenter) {
@@ -237,14 +238,21 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             final List<List<CourseComponent>> alternatives) {
 
         final AlertDialog.Builder builder = homePresenter.createDialogBuilder(getContext(), course, alternatives);
+        indexOfSelection = 0;
 
-        if (alternatives.size() > 0) {
-            builder.setItems(homePresenter.getListOfAlternativeTimes(alternatives), new DialogInterface.OnClickListener() {
+        if (alternatives.size() > 0) { // show only if valid selection exists
+            builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialogInterface, int index) {
-                    List<CourseComponent> selectedAlternative = alternatives.get(index);
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    List<CourseComponent> selectedAlternative = alternatives.get(indexOfSelection);
                     homePresenter.setAlternativeSchedule(selectedAlternative);
-                    builder.create().dismiss();
+                }
+            });
+            builder.setSingleChoiceItems(homePresenter.getListOfAlternativeTimes(alternatives), 0, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // list item selected by users
+                    indexOfSelection = i;
                 }
             });
         }
@@ -252,9 +260,10 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                builder.create().dismiss();
+                dialogInterface.dismiss();
             }
         });
+
         builder.show();
     }
 }
