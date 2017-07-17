@@ -18,6 +18,7 @@ import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BasePresenter;
+import com.example.peterchu.watplanner.Constants;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
@@ -122,7 +123,9 @@ class HomePresenter implements BasePresenter {
         if (!canWriteCalendar) {
             ActivityCompat.requestPermissions(this.homeFragment.getActivity(),
                     new String[]{Manifest.permission.WRITE_CALENDAR,
-                            Manifest.permission.READ_CALENDAR}, 0);
+                            Manifest.permission.READ_CALENDAR},
+                    Constants.REQUEST_CALENDAR_PERMISSIONS);
+            return;
         }
 
         Toast.makeText(this.homeFragment.getActivity(), "Exporting to calendar ...", Toast.LENGTH_SHORT).show();
