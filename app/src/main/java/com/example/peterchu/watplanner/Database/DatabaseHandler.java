@@ -64,6 +64,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_TERM = "term";
     private static final String KEY_CALENDAR_ID = "calendarId";
     private static final String KEY_EVENT_ID = "eventId";
+    private static final String KEY_IN_CALENDAR = "inCalendar";
 
     private static DatabaseHandler dbSingleton;
 
@@ -181,6 +182,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                         values.put(KEY_TERM, courseSchedule.getTerm());
                         values.put(KEY_CALENDAR_ID, (Integer) null);
                         values.put(KEY_EVENT_ID, (Integer) null);
+                        values.put(KEY_IN_CALENDAR, 0);
                         Log.d("DBHandler", "Adding Schedules for " + courseSchedule.getSubject() + courseSchedule.getCatalogNumber() + " - " + weekday);
                         db.insert(TABLE_SCHEDULES, null, values);
                     }
@@ -223,7 +225,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_IS_TBA + " INTEGER," + KEY_DAY + " TEXT,"
                 + KEY_BUIDING + " TEXT," + KEY_ROOM + " TEXT," + KEY_INSTRUCTORS + " TEXT,"
                 + KEY_TERM + " TEXT," + KEY_COURSE_ID + " INTEGER," + KEY_CALENDAR_ID + " INTEGER,"
-                + KEY_EVENT_ID + " INTEGER," + " FOREIGN KEY (" + KEY_COURSE_ID + ") REFERENCES "
+                + KEY_EVENT_ID + " INTEGER," + KEY_IN_CALENDAR + " INTEGER,"
+                + " FOREIGN KEY (" + KEY_COURSE_ID + ") REFERENCES "
                 + TABLE_COURSES + "(" + KEY_ID + "))";
 
         db.execSQL(CREATE_SCHEDULES_TABLE);
@@ -448,6 +451,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         courseComponent.setLocation(loc);
         courseComponent.setInstructors(SerializableStringToArray(cursor.getString(19)));
         courseComponent.setTerm(cursor.getString(20));
+        courseComponent.setCourseId(Integer.parseInt(cursor.getString(21)));
         if (!cursor.isNull(22)) {
             courseComponent.setCalendarId(cursor.getInt(22));
         }
@@ -604,6 +608,54 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return count;
     }
 
+    private void resetCachedCalendar() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + TABLE_SCHEDULES
+                + " SET " + KEY_IN_CALENDAR + "=0"
+                + " WHERE " + KEY_IN_CALENDAR + "=1";
+        db.rawQuery(query, null);
+    }
+
+    public void saveCalendar(List<List<CourseComponent>> list) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        resetCachedCalendar();
+        for (List<CourseComponent> components: list) {
+            for (CourseComponent c: components) {
+                String query = "UPDATE " + TABLE_SCHEDULES
+                        + " SET " + KEY_IN_CALENDAR + "=1"
+                        + " WHERE " + KEY_ID+ "=" + c.getId();
+                db.rawQuery(query, null);
+            }
+        }
+    }
+
+    public List<List<CourseComponent>> getCalendar() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<List<CourseComponent>> ret = new ArrayList<>();
+        String query = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_IN_CALENDAR + "=1 ORDER BY "
+                + KEY_COURSE_ID + ", " + KEY_TYPE;
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            int prevCourseId = -1;
+            String prevType = "";
+            List<CourseComponent> components = new ArrayList<>();
+            do {
+                CourseComponent courseComponent = makeCourseComponent(cursor);
+                if (courseComponent.getCourseId() != prevCourseId || !courseComponent.getType().equals(prevType)) {
+                    Log.d("GetCalendar", "======= new list =======");
+                    ret.add(components);
+                    components = new ArrayList<>();
+                    prevCourseId = courseComponent.getCourseId();
+                    prevType = courseComponent.getType();
+                }
+                Log.d("GetCalendar", courseComponent.toString());
+                components.add(courseComponent);
+            } while (cursor.moveToNext());
+            ret.add(components);
+        }
+        cursor.close();
+        return ret;
+    }
 
     // string is in format TTh, MF, etc.
     private static Set<String> tokenizeDays(String str) {

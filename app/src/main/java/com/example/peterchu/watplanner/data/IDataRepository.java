@@ -48,6 +48,10 @@ public interface IDataRepository {
 
     List<List<CourseComponent>> getTutorials(int courseId);
 
+    List<List<CourseComponent>> getCourseSchedules();
+
+    void setCourseSchedules(List<List<CourseComponent>> components);
+
     /**
      * Fetches in-depth details of a course
      *

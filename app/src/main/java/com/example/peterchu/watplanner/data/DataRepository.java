@@ -246,6 +246,16 @@ public class DataRepository implements IDataRepository {
         databaseHandler.associateCourseComponentEvent(id, calId, eventId);
     }
 
+    @Override
+    public List<List<CourseComponent>> getCourseSchedules() {
+        return databaseHandler.getCalendar();
+    }
+
+    @Override
+    public void setCourseSchedules(List<List<CourseComponent>> components) {
+        databaseHandler.saveCalendar(components);
+    }
+
     public interface SyncDataCallback {
         void onDataSynced();
 
