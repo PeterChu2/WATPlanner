@@ -81,15 +81,15 @@ class HomePresenter implements BasePresenter {
             return;
         }
         List<List<CourseComponent>> schedule = scheduler.getCurrentSchedule();
-        // save in cache for future recovery
-//        dataRepository.setCourseSchedules(schedule); // todo - tim link this please
+        // save cache.
+        dataRepository.setCourseSchedules(schedule);
         homeFragment.setCourseSchedule(schedule);
     }
 
     private void recoverLastSavedScheduleState() {
-//        List<List<CourseComponent>> recoveredSchedule = dataRepository.getCourseSchedules(); // todo - kwok yin timothy
-        List<List<CourseComponent>> recoveredSchedule = null; //todo - delete after tim adds
-        if (recoveredSchedule != null) { // todo - tim, make sure response returns null or some special char to indicate cache miss!
+        List<List<CourseComponent>> recoveredSchedule = dataRepository.getCourseSchedules();
+        // check cache
+        if (recoveredSchedule != null && recoveredSchedule.size() > 0 && recoveredSchedule.get(0).size() > 0) {
             homeFragment.setCourseSchedule(recoveredSchedule);
         } else { // cache-miss
             generateScheduleForCalendar();
