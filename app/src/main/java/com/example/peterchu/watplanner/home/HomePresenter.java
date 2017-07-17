@@ -24,7 +24,6 @@ import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -70,19 +69,25 @@ class HomePresenter implements BasePresenter {
      * to display it.
      */
     private void generateScheduleForCalendar() {
-        // todo: wrap this
-        try {
-            if (scheduler.generateSchedules()) {
-                Log.d("HomePresenter", "Conflict-free schedule generated!");
-            } else {
-                // The application should never enter this state, throw RTE
-                throw new IllegalStateException("No conflict-free schedule generated!");
+        // todo - link with kwok tong
+//        List<List<CourseComponent>> schedules = dataRepository.getCourseSchedules();
+        List<List<CourseComponent>> schedules = null;
+        if (schedules == null) {
+            try {
+                if (scheduler.generateSchedules()) {
+                    Log.d("HomePresenter", "Conflict-free schedule generated!");
+                } else {
+                    // The application should never enter this state, throw RTE
+                    throw new IllegalStateException("No conflict-free schedule generated!");
+                }
+            } catch (Exception e) {
+                Log.e("HomePresenter", "Failed to generate schedule: " + e);
+                return;
             }
-        } catch (Exception e) {
-            Log.e("HomePresenter", "Failed to generate schedule: " + e);
-            return;
+            homeFragment.setCourseSchedule(scheduler.getCurrentSchedule());
+        } else {
+            homeFragment.setCourseSchedule(schedules);
         }
-        homeFragment.setCourseSchedule(scheduler.getCurrentSchedule());
     }
 
     public void onCourseRemoved(Course course) {
@@ -232,34 +237,9 @@ class HomePresenter implements BasePresenter {
         homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
     }
 
-    public void saveCourses(List<List<CourseComponent>> list) {
-
-    }
-
-    public List<List<CourseComponent>> getAlternativeSchedule(CourseComponent course, List<CourseComponent> selection, List<List<CourseComponent>> currSchedule) {
-        // todo: call young moula's shit
-        List<List<CourseComponent>> result = new ArrayList<>();
-        for (List<CourseComponent> courses : currSchedule) {
-            List<CourseComponent> subResult = new ArrayList<>();
-            for (CourseComponent c : courses) {
-                // curate new set of schedule by filtering out prev course section
-                if (!isCourseSameGroup(c, course)) {
-                    subResult.add(c);
-                }
-            }
-            result.add(subResult);
-        }
-        // update schedule with current section selection
-        result.add(selection);
-        return result;
-    }
-
-    private boolean isCourseSameGroup(CourseComponent prevCourse, CourseComponent currCourse) {
-        if (!prevCourse.getSubject().equals(currCourse.getSubject())) return false;
-        if (!prevCourse.getClassNumber().equals(currCourse.getClassNumber())) return false;
-        if (!prevCourse.getType().equals(currCourse.getType())) return false;
-        if (!prevCourse.getCatalogNumber().equals(currCourse.getCatalogNumber())) return false;
-        return true;
+    public void setAlternativeSchedule(List<CourseComponent> selection) {
+        scheduler.setCourseSectionConstraint(selection);
+        generateScheduleForCalendar();
     }
 
     private String getTypeSpelling(String type) {

@@ -225,7 +225,6 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
 
     public void setCourseSchedule(List<List<CourseComponent>> courseSchedule) {
         mCourseSchedule = courseSchedule;
-        homePresenter.saveCourses(mCourseSchedule);
         weekView.notifyDatasetChanged();
     }
 
@@ -243,15 +242,8 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             builder.setItems(homePresenter.getListOfAlternativeTimes(alternatives), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int index) {
-                    // todo: 1.) abstract to presenter
-                    // todo: 2.) remove LIST from original section
-                    // todo: 3.) add LIST of selected section
-                    // todo: 4.) refresh calendar
                     List<CourseComponent> selectedAlternative = alternatives.get(index);
-                    // get new curated list of course schedules
-                    List<List<CourseComponent>> updatedSchedule = homePresenter.getAlternativeSchedule(course, selectedAlternative, mCourseSchedule);
-                    // set schedule and refresh calendar view
-                    setCourseSchedule(updatedSchedule);
+                    homePresenter.setAlternativeSchedule(selectedAlternative);
                     builder.create().dismiss();
                 }
             });
