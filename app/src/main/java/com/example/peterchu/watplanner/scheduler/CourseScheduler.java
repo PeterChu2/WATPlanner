@@ -167,7 +167,6 @@ public class CourseScheduler {
         Set<List<CourseComponent>> temp = new HashSet<>();
         temp.addAll(additionalConstraints);
         additionalConstraints.clear();
-        reset();
         generateSchedules();
 
         for (Solution solution : solver.getSolutionRecorder().getSolutions()) {
