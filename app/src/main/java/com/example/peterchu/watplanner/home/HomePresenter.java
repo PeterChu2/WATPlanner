@@ -89,7 +89,7 @@ class HomePresenter implements BasePresenter {
     private void recoverLastSavedScheduleState() {
         List<List<CourseComponent>> recoveredSchedule = dataRepository.getCourseSchedules();
         // check cache
-        if (recoveredSchedule != null && recoveredSchedule.size() > 0 && recoveredSchedule.get(0).size() > 0) {
+        if (recoveredSchedule != null && recoveredSchedule.size() > 0) {
             homeFragment.setCourseSchedule(recoveredSchedule);
         } else { // cache-miss
             generateScheduleForCalendar();
