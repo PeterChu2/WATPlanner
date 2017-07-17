@@ -1,7 +1,6 @@
 package com.example.peterchu.watplanner.coursedetail;
 
 import android.app.Dialog;
-import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -11,7 +10,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -23,7 +21,6 @@ import android.widget.TextView;
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
-import com.alamkanak.weekview.WeekViewLoader;
 import com.example.peterchu.watplanner.BaseView;
 import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Course.CourseDetails;
@@ -31,10 +28,8 @@ import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Random;
 
 /**
  * A fragment representing a single Course detail screen.

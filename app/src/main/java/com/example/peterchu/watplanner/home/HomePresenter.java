@@ -13,11 +13,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
+import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
@@ -51,7 +53,7 @@ class HomePresenter implements BasePresenter {
             @Override
             public void onDataSynced() {
                 loadCourseCards();
-                generateScheduleForCalendar();
+                recoverLastSavedScheduleState();
             }
 
             @Override
@@ -78,7 +80,20 @@ class HomePresenter implements BasePresenter {
             Log.e("HomePresenter", "Failed to generate schedule: " + e);
             return;
         }
-        homeFragment.setCourseSchedule(scheduler.getCurrentSchedule());
+        List<List<CourseComponent>> schedule = scheduler.getCurrentSchedule();
+        // save cache.
+        dataRepository.setCourseSchedules(schedule);
+        homeFragment.setCourseSchedule(schedule);
+    }
+
+    private void recoverLastSavedScheduleState() {
+        List<List<CourseComponent>> recoveredSchedule = dataRepository.getCourseSchedules();
+        // check cache
+        if (recoveredSchedule != null && recoveredSchedule.size() > 0) {
+            homeFragment.setCourseSchedule(recoveredSchedule);
+        } else { // cache-miss
+            generateScheduleForCalendar();
+        }
     }
 
     public void onCourseRemoved(Course course) {
@@ -190,6 +205,32 @@ class HomePresenter implements BasePresenter {
         }
     }
 
+    public AlertDialog.Builder createDialogBuilder(Context context, CourseComponent component, List<List<CourseComponent>> list) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.MaterialLightDialogTheme);
+        if (list.size() == 0) {
+            builder.setTitle(String.format("No other sections for this %s", getTypeSpelling(component.getType())));
+        } else {
+            builder.setTitle(String.format("Switch %s section", getTypeSpelling(component.getType())));
+        }
+        return builder;
+    }
+
+    public CharSequence[] getListOfAlternativeTimes(List<List<CourseComponent>> componentList) {
+        CharSequence[] alternativeTimesArray = new CharSequence[componentList.size()];
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+        for (int i = 0; i < componentList.size(); i++) {
+            for (int j = 0; j < componentList.get(i).size(); j++) {
+                CourseComponent cc = componentList.get(i).get(j);
+                sb.append(deseralizeCourseInfo(getDaySpelling(cc.getDay()), cc.getStartTime(), cc.getEndTime(), cc.getEnrollmentTotal(), cc.getEnrollmentCapacity()));
+                sb.append("\n");
+            }
+            alternativeTimesArray[i] = sb.toString();
+            sb.setLength(0); // reset
+        }
+        return alternativeTimesArray;
+    }
+
     public void onCalendarEventClicked(CourseComponent courseComponent) {
         List<List<CourseComponent>> alternatives;
         try {
@@ -199,10 +240,37 @@ class HomePresenter implements BasePresenter {
             return;
         }
 
-        if (alternatives.size() == 0) {
-            // No other sections that this course can switch into
-        } else {
-            homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
+        homeFragment.showConflictFreeAlternativesDialog(courseComponent, alternatives);
+    }
+
+    public void setAlternativeSchedule(List<CourseComponent> selection) {
+        scheduler.setCourseSectionConstraint(selection);
+        generateScheduleForCalendar();
+    }
+
+    private String getTypeSpelling(String type) {
+        switch(type) {
+            case "LEC": return "lecture";
+            case "TUT": return "tutorial";
+            case "LAB": return "lab";
+            default: return null;
         }
+    }
+
+    private String getDaySpelling(String day) {
+        switch (day.toUpperCase()) {
+            case "M": return "Monday";
+            case "T": return "Tuesday";
+            case "W": return "Wednesday";
+            case "TH": return "Thursday";
+            case "F": return "Friday";
+            case "S": return "Saturday";
+            case "SU": return "Sunday";
+            default: return day;
+        }
+    }
+
+    private String deseralizeCourseInfo(String day, String start, String end, int total, int capacity) {
+        return String.format("%s, %s - %s (%s/%s)", day, start, end, total, capacity);
     }
 }

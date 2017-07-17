@@ -1,6 +1,5 @@
 package com.example.peterchu.watplanner.home;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,7 +26,6 @@ import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
-import com.example.peterchu.watplanner.coursedetail.ConflictResolveItemView;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
 import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
@@ -50,6 +48,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     WeekView weekView;
     List<List<CourseComponent>> mCourseSchedule;
 
+    int indexOfSelection;
 
     @Override
     public void setPresenter(HomePresenter presenter) {
@@ -90,6 +89,7 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         });
 
         weekView = (WeekView) root.findViewById(R.id.weekViewHome);
+
         // The week view has infinite scrolling horizontally. We have to provide the events of a
         // month every time the month changes on the week view.
         weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
@@ -168,8 +168,8 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     }
 
     public void showExportCalendarDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Export added courses to your schedule.");
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.MaterialLightDialogTheme);
+        builder.setTitle("Export courses to calendar");
 
         builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
             @Override
@@ -234,13 +234,36 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
     }
 
     public void showConflictFreeAlternativesDialog(
-            CourseComponent course,
-            List<List<CourseComponent>> alternatives) {
-        ConflictResolveItemView alternateSlotView = new ConflictResolveItemView(
-                HomeFragment.this.getContext(),
-                course);
-        Dialog d = new Dialog(HomeFragment.this.getContext());
-        d.setContentView(alternateSlotView);
-        d.show();
+            final CourseComponent course,
+            final List<List<CourseComponent>> alternatives) {
+
+        final AlertDialog.Builder builder = homePresenter.createDialogBuilder(getContext(), course, alternatives);
+        indexOfSelection = 0;
+
+        if (alternatives.size() > 0) { // show only if valid selection exists
+            builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    List<CourseComponent> selectedAlternative = alternatives.get(indexOfSelection);
+                    homePresenter.setAlternativeSchedule(selectedAlternative);
+                }
+            });
+            builder.setSingleChoiceItems(homePresenter.getListOfAlternativeTimes(alternatives), 0, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // list item selected by users
+                    indexOfSelection = i;
+                }
+            });
+        }
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        builder.show();
     }
 }
