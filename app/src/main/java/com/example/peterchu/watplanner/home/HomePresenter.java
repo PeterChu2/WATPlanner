@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.example.peterchu.watplanner.BasePresenter;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
+import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
@@ -110,6 +112,25 @@ class HomePresenter implements BasePresenter {
                     new String[]{Manifest.permission.WRITE_CALENDAR,
                             Manifest.permission.READ_CALENDAR}, 0);
         }
+
+        Toast.makeText(this.homeFragment.getActivity(), "Exporting to calendar ...", Toast.LENGTH_SHORT).show();
+
+        Thread thread = new Thread(){
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2500);
+                    Snackbar.make(homeFragment.getActivity().findViewById(R.id.container),
+                            "Courses successfully exported!",
+                            Snackbar.LENGTH_SHORT)
+                            .show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        thread.start();
+
         long calId = getDefaultCalendarID(this.homeFragment.getActivity());
 
         for (List<CourseComponent> courseComponents : courseSchedule) {
@@ -150,7 +171,6 @@ class HomePresenter implements BasePresenter {
                         courseComponent.getId(), calId, eventId);
             }
         }
-        Toast.makeText(this.homeFragment.getActivity(), "Courses exported!", Toast.LENGTH_SHORT);
     }
 
     public long getDefaultCalendarID(Context c) {
