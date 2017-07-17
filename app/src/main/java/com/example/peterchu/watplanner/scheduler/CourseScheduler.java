@@ -161,8 +161,14 @@ public class CourseScheduler {
      * switch into and still maintain a conflict-free schedule.
      */
     public List<List<CourseComponent>> getAlternateSections(CourseComponent component)
-            throws ContradictionException {
+            throws ParseException, ContradictionException {
         List<List<CourseComponent>> ret = new ArrayList<>();
+
+        Set<List<CourseComponent>> temp = new HashSet<>();
+        temp.addAll(additionalConstraints);
+        additionalConstraints.clear();
+        generateSchedules();
+
         for (Solution solution : solver.getSolutionRecorder().getSolutions()) {
             solver.getSearchLoop().restoreRootNode();
             solver.getEnvironment().worldPush();
@@ -177,6 +183,7 @@ public class CourseScheduler {
                 }
             }
         }
+        additionalConstraints = temp;
         return ret;
     }
 
@@ -261,9 +268,9 @@ public class CourseScheduler {
             for (int i = 0; i < components.size(); i++) {
                 List<CourseComponent> section = components.get(i);
                 for (List<CourseComponent> sectionConstraint : additionalConstraints) {
-                    List<BoolVar> sectionBools = sectionList.get(i);
-                    BoolVar[] a = sectionBools.toArray(new BoolVar[sectionBools.size()]);
                     if (isSameCourse(sectionConstraint.get(0), section.get(0))) {
+                        List<BoolVar> sectionBools = sectionList.get(i);
+                        BoolVar[] a = sectionBools.toArray(new BoolVar[sectionBools.size()]);
                         if (sectionConstraint.get(0).getSection()
                                 .equals(section.get(0).getSection())) {
                             Constraint c = and(a);
