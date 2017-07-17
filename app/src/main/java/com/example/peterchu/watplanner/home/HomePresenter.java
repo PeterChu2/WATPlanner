@@ -22,8 +22,6 @@ import com.example.peterchu.watplanner.data.DataRepository;
 import com.example.peterchu.watplanner.data.IDataRepository;
 import com.example.peterchu.watplanner.scheduler.CourseScheduler;
 
-import org.chocosolver.solver.exception.ContradictionException;
-
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;

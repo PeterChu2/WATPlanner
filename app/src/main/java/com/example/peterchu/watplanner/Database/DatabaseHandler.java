@@ -348,7 +348,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + " WHERE " + KEY_COURSE_ID + "=" + courseId
                 + " AND " + KEY_TYPE + "='" + type + "'";
         Cursor cursor = db.rawQuery(query, null);
-        Log.d("GET_LECTURES", "GETTING LECTURES");
 
         return groupBySection(cursor);
     }
@@ -458,6 +457,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         if (!cursor.isNull(23)) {
             courseComponent.setEventId(cursor.getInt(23));
         }
+        courseComponent.setInCalendar(cursor.getInt(24) > 0);
         return courseComponent;
     }
 
@@ -613,7 +613,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String query = "UPDATE " + TABLE_SCHEDULES
                 + " SET " + KEY_IN_CALENDAR + "=0"
                 + " WHERE " + KEY_IN_CALENDAR + "=1";
-        db.rawQuery(query, null);
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+        cursor.close();
     }
 
     public void saveCalendar(List<List<CourseComponent>> list) {
@@ -624,16 +626,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 String query = "UPDATE " + TABLE_SCHEDULES
                         + " SET " + KEY_IN_CALENDAR + "=1"
                         + " WHERE " + KEY_ID+ "=" + c.getId();
-                db.rawQuery(query, null);
+                Cursor cursor = db.rawQuery(query, null);
+                cursor.moveToFirst();
+                cursor.close();
             }
         }
+        getCalendar();
     }
 
     public List<List<CourseComponent>> getCalendar() {
         SQLiteDatabase db = this.getReadableDatabase();
         List<List<CourseComponent>> ret = new ArrayList<>();
         String query = "SELECT * FROM " + TABLE_SCHEDULES + " WHERE " + KEY_IN_CALENDAR + "=1 ORDER BY "
-                + KEY_COURSE_ID + ", " + KEY_TYPE;
+               + KEY_COURSE_ID + ", " + KEY_TYPE;
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.moveToFirst()) {
             int prevCourseId = -1;
