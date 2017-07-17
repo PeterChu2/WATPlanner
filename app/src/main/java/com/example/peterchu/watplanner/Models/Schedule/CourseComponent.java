@@ -65,6 +65,8 @@ public class CourseComponent {
 
     private Integer eventId;
 
+    private Boolean inCalendar;
+
     private Integer courseId;
 
     public int getId() { return id; }
@@ -223,6 +225,14 @@ public class CourseComponent {
         this.location = location;
     }
 
+    public Boolean getInCalendar() {
+        return inCalendar;
+    }
+
+    public void setInCalendar(boolean inCalendar) {
+        this.inCalendar = inCalendar;
+    }
+
     public String[] getInstructors() {
         return instructors;
     }
@@ -232,14 +242,16 @@ public class CourseComponent {
     }
 
     public String toString() {
-        return String.format("%s %s - %s %s - %s %s~%s",
+        return String.format("%d %s %s - %s %s - %s %s~%s: %d",
+                id,
                 subject,
                 catalogNumber,
                 type,
                 section,
                 day,
                 startTime,
-                endTime);
+                endTime,
+                inCalendar ? 1 : 0);
     }
 
     private Calendar getTermStartDate() {
