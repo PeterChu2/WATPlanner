@@ -46,8 +46,6 @@ public class CourseListAdapter extends ArrayAdapter<Course> {
         nameTextView.setText(course.getName());
         TextView titleTextView = (TextView) convertView.findViewById(R.id.listItemCourseTitle);
         titleTextView.setText(course.getTitle());
-        TextView conflictFlagTextView = (TextView) convertView.findViewById(
-                R.id.listItemCourseConflict);
         final ImageView options = (ImageView) convertView.findViewById(R.id.options_button);
 
         options.setOnClickListener(new View.OnClickListener() {
