@@ -1,78 +1,57 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/materialLightBackground"
     android:paddingLeft="6dp"
     android:paddingRight="6dp">
 
-    <android.support.v7.widget.CardView
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/prerequisites_card"
-        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        card_view:cardUseCompatPadding="true"
+        android:layout_gravity="center"
         card_view:cardBackgroundColor="@android:color/white"
-        card_view:cardCornerRadius="2dp">
+        card_view:cardCornerRadius="2dp"
+        card_view:cardUseCompatPadding="true">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="10dp">
+            android:layout_height="match_parent"
+            android:paddingBottom="10dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="10dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/listItemCourseName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="15dp"
-                android:paddingRight="15dp"
-                android:paddingTop="10dp"
-                android:orientation="horizontal"
-                android:id="@+id/listItemRow1">
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginBottom="2dp"
+                android:textAppearance="@android:style/TextAppearance.Material.Title"
+                android:textColor="@color/materialText1"
+                tools:text="ECE 452" />
 
-                <TextView
-                    android:id="@+id/listItemCourseName"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:textAppearance="@android:style/TextAppearance.Material.Title"
-                    android:textColor="@color/materialText1"/>
-
-                <TextView
-                    android:id="@+id/listItemCourseConflict"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:textAlignment="textEnd"
-                    android:text="@string/conflict"
-                    android:textAppearance="@android:style/TextAppearance.Material"
-                    android:textColor="@android:color/holo_red_light"
-                    android:visibility="invisible"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/listItemRow2"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/listItemCourseTitle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="5dp"
-                android:paddingLeft="15dp"
-                android:paddingRight="15dp"
-                android:orientation="horizontal">
+                android:layout_below="@id/listItemCourseName"
+                android:textColor="@color/materialText2"
+                tools:text="Software Design and Architectures" />
 
-                <TextView
-                    android:id="@+id/listItemCourseTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:textColor="@color/materialText2"/>
+            <ImageView
+                android:id="@+id/options_button"
+                android:layout_width="20dp"
+                android:layout_height="25dp"
+                android:layout_alignParentRight="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_dots" />
 
-                <ImageView
-                    android:id="@+id/options_button"
-                    android:layout_width="20dp"
-                    android:layout_height="25dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_dots"/>
-            </LinearLayout>
-        </LinearLayout>
+        </RelativeLayout>
+
     </android.support.v7.widget.CardView>
+
 </RelativeLayout>
