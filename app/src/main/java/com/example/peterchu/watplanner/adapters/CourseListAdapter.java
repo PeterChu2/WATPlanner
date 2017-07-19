@@ -1,10 +1,8 @@
-package com.example.peterchu.watplanner.Views.Adapters;
+package com.example.peterchu.watplanner.adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -18,9 +16,7 @@ import android.widget.TextView;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.R;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CourseListAdapter extends ArrayAdapter<Course> {
     private Context context;

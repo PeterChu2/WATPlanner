@@ -1,4 +1,4 @@
-package com.example.peterchu.watplanner.ResizableListView;
+package com.example.peterchu.watplanner.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
