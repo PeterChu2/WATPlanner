@@ -25,7 +25,7 @@ import com.example.peterchu.watplanner.Calendar.WeekViewCourseEvent;
 import com.example.peterchu.watplanner.Models.Course.Course;
 import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
-import com.example.peterchu.watplanner.Views.Adapters.CourseListAdapter;
+import com.example.peterchu.watplanner.adapters.CourseListAdapter;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailActivity;
 import com.example.peterchu.watplanner.coursedetail.CourseDetailFragment;
 import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
