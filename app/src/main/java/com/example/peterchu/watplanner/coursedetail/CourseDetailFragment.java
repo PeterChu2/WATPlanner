@@ -108,9 +108,13 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
             }
         });
         weekView.setMinimumHeight(1200);
-        weekView.setFirstDayOfWeek(Calendar.MONDAY);
         weekView.setShowNowLine(false);
         weekView.goToHour(8);
+        weekView.setShowNowLine(false);
+        weekView.goToHour(8);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        weekView.goToDate(cal);
     }
 
     @Override

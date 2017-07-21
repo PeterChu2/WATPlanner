@@ -12,9 +12,9 @@ import android.provider.CalendarContract;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
-import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
 import com.example.peterchu.watplanner.BasePresenter;
@@ -56,18 +56,18 @@ class HomePresenter implements BasePresenter {
         schedule = dataRepository.getCourseSchedules();
         // If data is already synced, the callback executes immediately.
         dataRepository.syncData(new DataRepository.SyncDataCallback() {
-            @Override
-            public void onDataSynced() {
-                loadCourseCards();
-                recoverLastSavedScheduleState();
-            }
+                                    @Override
+                                    public void onDataSynced() {
+                                        loadCourseCards();
+                                        recoverLastSavedScheduleState();
+                                    }
 
-            @Override
-            public void onDataSyncFailure() {
-                // TODO: Implement retry. Continual failure should alert user.
-            }
-        },
-        this.parentActivity);
+                                    @Override
+                                    public void onDataSyncFailure() {
+                                        // TODO: Implement retry. Continual failure should alert user.
+                                    }
+                                },
+                this.parentActivity);
     }
 
     public void pause() {
@@ -125,7 +125,7 @@ class HomePresenter implements BasePresenter {
 
         Toast.makeText(this.homeFragment.getActivity(), "Exporting to calendar ...", Toast.LENGTH_SHORT).show();
 
-        Thread thread = new Thread(){
+        Thread thread = new Thread() {
             @Override
             public void run() {
                 try {
@@ -222,12 +222,16 @@ class HomePresenter implements BasePresenter {
         }
     }
 
-    public AlertDialog.Builder createDialogBuilder(Context context, CourseComponent component, List<List<CourseComponent>> list) {
+    public AlertDialog.Builder createDialogBuilder(Context context,
+                                                   CourseComponent component,
+                                                   List<List<CourseComponent>> list) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.MaterialLightDialogTheme);
         if (list.size() == 0) {
-            builder.setTitle(String.format("No other sections for this %s", getTypeSpelling(component.getType())));
+            builder.setTitle(String.format("No other sections for this %s",
+                    ScheduleUtils.getTypeSpelling(component.getType())));
         } else {
-            builder.setTitle(String.format("Switch %s section", getTypeSpelling(component.getType())));
+            builder.setTitle(String.format("Switch %s section",
+                    ScheduleUtils.getTypeSpelling(component.getType())));
         }
         return builder;
     }
@@ -239,7 +243,12 @@ class HomePresenter implements BasePresenter {
         for (int i = 0; i < componentList.size(); i++) {
             for (int j = 0; j < componentList.get(i).size(); j++) {
                 CourseComponent cc = componentList.get(i).get(j);
-                sb.append(deseralizeCourseInfo(getDaySpelling(cc.getDay()), cc.getStartTime(), cc.getEndTime(), cc.getEnrollmentTotal(), cc.getEnrollmentCapacity()));
+                sb.append(ScheduleUtils.deseralizeCourseInfo(
+                        ScheduleUtils.getDaySpelling(cc.getDay()),
+                        cc.getStartTime(),
+                        cc.getEndTime(),
+                        cc.getEnrollmentTotal(),
+                        cc.getEnrollmentCapacity()));
                 sb.append("\n");
             }
             alternativeTimesArray[i] = sb.toString();
@@ -263,31 +272,5 @@ class HomePresenter implements BasePresenter {
     public void setAlternativeSchedule(List<CourseComponent> selection) {
         scheduler.setCourseSectionConstraint(selection);
         generateScheduleForCalendar();
-    }
-
-    private String getTypeSpelling(String type) {
-        switch(type) {
-            case "LEC": return "lecture";
-            case "TUT": return "tutorial";
-            case "LAB": return "lab";
-            default: return null;
-        }
-    }
-
-    private String getDaySpelling(String day) {
-        switch (day.toUpperCase()) {
-            case "M": return "Monday";
-            case "T": return "Tuesday";
-            case "W": return "Wednesday";
-            case "TH": return "Thursday";
-            case "F": return "Friday";
-            case "S": return "Saturday";
-            case "SU": return "Sunday";
-            default: return day;
-        }
-    }
-
-    private String deseralizeCourseInfo(String day, String start, String end, int total, int capacity) {
-        return String.format("%s, %s - %s (%s/%s)", day, start, end, total, capacity);
     }
 }
