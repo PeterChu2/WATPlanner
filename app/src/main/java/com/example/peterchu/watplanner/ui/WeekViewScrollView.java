@@ -36,6 +36,10 @@ public class WeekViewScrollView extends ScrollView {
                 // First view within the container of scrollview is the WeekView card
                 LinearLayout container = (LinearLayout) getChildAt(0);
                 View view = container.getChildAt(0);
+                if ((int) ev.getY() > view.getHeight()) {
+                    super.onTouchEvent(ev);
+                    return false;
+                }
                 return (int) ev.getY() > view.getHeight() && super.onTouchEvent(ev);
 
             case MotionEvent.ACTION_CANCEL:
