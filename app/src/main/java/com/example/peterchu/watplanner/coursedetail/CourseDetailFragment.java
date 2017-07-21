@@ -28,17 +28,19 @@ import com.example.peterchu.watplanner.Models.Schedule.CourseComponent;
 import com.example.peterchu.watplanner.R;
 import com.example.peterchu.watplanner.scheduler.ScheduleUtils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 /**
  * A fragment representing a single Course detail screen.
  */
-public class CourseDetailFragment extends Fragment implements BaseView<CourseDetailPresenter> {
+public class CourseDetailFragment extends Fragment
+        implements BaseView<CourseDetailPresenter>, MonthLoader.MonthChangeListener {
 
     public static final String ARG_COURSE_ID = "course_id";
 
-    private List<List<CourseComponent>> mCourseSchedule;
+    private List<List<CourseComponent>> mCourseSchedule = new ArrayList<>();
     private CourseDetailPresenter presenter;
 
     private View rootView;
@@ -61,6 +63,29 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.detail_toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // The week view has infinite scrolling horizontally. We have to provide the events of a
+        // month every time the month changes on the week view.
+        weekView.setMonthChangeListener(this);
+
+        // Set an action when any event is clicked.
+        weekView.setOnEventClickListener(new WeekView.EventClickListener() {
+            @Override
+            public void onEventClick(WeekViewEvent event, RectF eventRect) {
+                CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
+                ComponentItemView componentItemView = new ComponentItemView(
+                        CourseDetailFragment.this.getContext(), courseComponent
+                );
+                final Dialog d = new Dialog(CourseDetailFragment.this.getContext());
+                d.setContentView(componentItemView);
+                d.show();
+            }
+        });
+        weekView.setShowNowLine(false);
+        weekView.goToHour(8);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        weekView.goToDate(cal);
 
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -85,34 +110,7 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public void setCourseSchedule(List<List<CourseComponent>> courseSchedule) {
         mCourseSchedule = courseSchedule;
-        // The week view has infinite scrolling horizontally. We have to provide the events of a
-        // month every time the month changes on the week view.
-        weekView.setMonthChangeListener(new MonthLoader.MonthChangeListener() {
-            @Override
-            public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-                return ScheduleUtils.getWeekViewEvents(mCourseSchedule, newMonth);
-            }
-        });
-
-        // Set an action when any event is clicked.
-        weekView.setOnEventClickListener(new WeekView.EventClickListener() {
-            @Override
-            public void onEventClick(WeekViewEvent event, RectF eventRect) {
-                CourseComponent courseComponent = ((WeekViewCourseEvent) event).getCourseComponent();
-                ComponentItemView componentItemView = new ComponentItemView(
-                        CourseDetailFragment.this.getContext(), courseComponent
-                );
-                final Dialog d = new Dialog(CourseDetailFragment.this.getContext());
-                d.setContentView(componentItemView);
-                d.show();
-            }
-        });
-        weekView.setMinimumHeight(1200);
-        weekView.setShowNowLine(false);
-        weekView.goToHour(8);
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        weekView.goToDate(cal);
+        weekView.notifyDatasetChanged();
     }
 
     @Override
@@ -171,5 +169,10 @@ public class CourseDetailFragment extends Fragment implements BaseView<CourseDet
 
     public void showAddedMessage() {
         Snackbar.make(rootView, "Course added", Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public List<? extends WeekViewEvent> onMonthChange(int newYear, int newMonth) {
+        return ScheduleUtils.getWeekViewEvents(mCourseSchedule, newMonth);
     }
 }
