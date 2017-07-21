@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -37,19 +38,19 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v4.widget.NestedScrollView
+    <com.example.peterchu.watplanner.ui.NestedWeekViewScrollView
         android:id="@+id/course_detail_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingBottom="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@color/materialLightBackground"
+            android:orientation="vertical"
             android:paddingTop="30dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             tools:context="com.example.peterchu.watplanner.coursedetail.CourseDetailActivity">
@@ -64,7 +65,7 @@
                 android:paddingRight="8dp"
                 android:paddingTop="8dp">
 
-                <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                <android.support.v7.widget.CardView
                     android:id="@+id/title_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -93,8 +94,11 @@
                             android:layout_height="match_parent"
                             android:textColor="@color/materialText2"
                             tools:context="com.example.peterchu.watplanner.Views.CourseDetailFragment" />
+
                     </LinearLayout>
+
                 </android.support.v7.widget.CardView>
+
             </LinearLayout>
 
             <LinearLayout
@@ -108,7 +112,7 @@
                 android:paddingRight="8dp"
                 android:paddingTop="8dp">
 
-                <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                <android.support.v7.widget.CardView
                     android:id="@+id/description_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -138,7 +142,9 @@
                             android:textColor="@color/materialText2"
                             tools:context="com.example.peterchu.watplanner.Views.CourseDetailFragment" />
                     </LinearLayout>
+
                 </android.support.v7.widget.CardView>
+
             </LinearLayout>
 
             <LinearLayout
@@ -152,7 +158,7 @@
                 android:paddingRight="8dp"
                 android:paddingTop="8dp">
 
-                <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                <android.support.v7.widget.CardView
                     android:id="@+id/prerequisites_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -182,7 +188,9 @@
                             android:textColor="@color/materialText2"
                             tools:context="com.example.peterchu.watplanner.Views.CourseDetailFragment" />
                     </LinearLayout>
+
                 </android.support.v7.widget.CardView>
+
             </LinearLayout>
 
             <LinearLayout
@@ -196,7 +204,7 @@
                 android:paddingRight="8dp"
                 android:paddingTop="8dp">
 
-                <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                <android.support.v7.widget.CardView
                     android:id="@+id/antirequisites_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -240,7 +248,7 @@
                 android:paddingRight="8dp"
                 android:paddingTop="8dp">
 
-                <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                <android.support.v7.widget.CardView
                     android:id="@+id/enrollment_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -252,27 +260,28 @@
                     <com.alamkanak.weekview.WeekView
                         android:id="@+id/weekView"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="300dp"
+                        app:columnGap="8dp"
+                        app:dayBackgroundColor="#05000000"
                         app:eventTextColor="@android:color/white"
-                        app:textSize="12sp"
-                        app:hourHeight="40dp"
+                        app:eventTextSize="10sp"
+                        app:headerColumnBackground="#ffffffff"
                         app:headerColumnPadding="8dp"
                         app:headerColumnTextColor="#8f000000"
-                        app:headerRowPadding="12dp"
-                        app:columnGap="8dp"
-                        app:noOfVisibleDays="5"
                         app:headerRowBackgroundColor="#ffefefef"
-                        app:dayBackgroundColor="#05000000"
-                        app:todayBackgroundColor="#1848adff"
-                        app:headerColumnBackground="#ffffffff" />
+                        app:headerRowPadding="12dp"
+                        app:hourHeight="40dp"
+                        app:noOfVisibleDays="5"
+                        app:textSize="10sp"
+                        app:todayBackgroundColor="#1848adff" />
 
                 </android.support.v7.widget.CardView>
 
             </LinearLayout>
 
-        </RelativeLayout>
+        </LinearLayout>
 
-    </android.support.v4.widget.NestedScrollView>
+    </com.example.peterchu.watplanner.ui.NestedWeekViewScrollView>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
