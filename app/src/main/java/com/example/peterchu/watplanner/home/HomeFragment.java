@@ -108,9 +108,12 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
             }
         });
 
-        weekView.setFirstDayOfWeek(Calendar.MONDAY);
         weekView.setShowNowLine(false);
         weekView.goToHour(8);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        weekView.goToDate(cal);
+
 
         searchView = (MaterialSearchView) getActivity()
                 .findViewById(R.id.search_view);
@@ -180,8 +183,6 @@ public class HomeFragment extends Fragment implements BaseView<HomePresenter> {
         builder.setPositiveButton("Export", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // TODO: Replace empty list with the configuration of course components for courses
-                // that the user selected/SAT solver came up with
                 HomeFragment.this.exportCalendar();
             }
         });

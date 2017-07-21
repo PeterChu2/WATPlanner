@@ -50,4 +50,34 @@ public class ScheduleUtils {
         }
         return scheduler.getCurrentSchedule();
     }
+
+    public static String getTypeSpelling(String type) {
+        switch(type) {
+            case "LEC": return "lecture";
+            case "TUT": return "tutorial";
+            case "LAB": return "lab";
+            default: return null;
+        }
+    }
+
+    public static String getDaySpelling(String day) {
+        switch (day.toUpperCase()) {
+            case "M": return "Monday";
+            case "T": return "Tuesday";
+            case "W": return "Wednesday";
+            case "TH": return "Thursday";
+            case "F": return "Friday";
+            case "S": return "Saturday";
+            case "SU": return "Sunday";
+            default: return day;
+        }
+    }
+
+    public static String deseralizeCourseInfo(String day,
+                                               String start,
+                                               String end,
+                                               int total,
+                                               int capacity) {
+        return String.format("%s, %s - %s (%s/%s)", day, start, end, total, capacity);
+    }
 }
